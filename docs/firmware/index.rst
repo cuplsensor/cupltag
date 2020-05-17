@@ -4,5 +4,6 @@
    :caption: Reference
 
    gettingstarted
+   statechart
    reference/index
    
