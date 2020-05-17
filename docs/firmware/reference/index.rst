@@ -1,4 +1,4 @@
-Firmware Reference
+Reference
 --------------------
 
 .. toctree::
