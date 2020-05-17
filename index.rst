@@ -4,11 +4,15 @@ cupl Tag Documention
 .. _index:
 .. toctree::
    :maxdepth: 2
+   :caption: Firmware
 
-   docs/firmware
+   docs/firmware/index
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Hardware
+   
    docs/hardware
-
-   :caption: Contents:
 
 Indices and tables
 ==================
