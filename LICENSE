@@ -1,0 +1,23 @@
+Copyright (c) Plotsensor Ltd.
+
+cupl Tag is an Open Source project comprised of firmware and hardware.
+
+Firmware is licensed under the terms of the GPLv3 license.  
+Please see <http://www.gnu.org/licenses/gpl-3.0.html> for license text. 
+
+Hardware is licensed under the terms of the CERN-OHL-S v2 license. 
+You may redistribute and modify this documentation and make products
+using it under the terms of the CERN-OHL-S v2 (https:/cern.ch/cern-ohl).
+This documentation is distributed WITHOUT ANY EXPRESS OR IMPLIED
+WARRANTY, INCLUDING OF MERCHANTABILITY, SATISFACTORY QUALITY
+AND FITNESS FOR A PARTICULAR PURPOSE. Please see the CERN-OHL-S v2
+for applicable conditions.
+Source location: https://github.com/cuplsensor/cupltag
+As per CERN-OHL-S v2 section 4, should You produce hardware based on
+these sources, You must maintain the Source Location visible on the
+external case of the cupl Tag or other product you make using
+this documentation.
+
+Plotsensor Ltd. offers proprietary licenses for cupl Tag in exchange for a fee.
+This permits distribution of cupl Tag and any derivative work, without the obligation 
+to release source code. Please contact malcolm@plotsensor.com for more details.
