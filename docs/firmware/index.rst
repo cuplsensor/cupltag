@@ -3,6 +3,6 @@
    :hidden:
    :caption: Reference
 
-   quickstart
+   gettingstarted
    reference/index
    
