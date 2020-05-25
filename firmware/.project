@@ -7,6 +7,7 @@
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.cdt.managedbuilder.core.genmakebuilder</name>
+			<triggers>clean,full,incremental,</triggers>
 			<arguments>
 			</arguments>
 		</buildCommand>
@@ -28,7 +29,7 @@
 		<link>
 			<name>urlencoder</name>
 			<type>2</type>
-			<location>/Users/malcolm/workspace/PSCodec/pscodec/encoder/pyencoder/c_encoder</location>
+			<location>C:/Users/malcolm/workspace/PSCodec/pscodec/encoder/pyencoder/c_encoder</location>
 		</link>
 	</linkedResources>
 </projectDescription>
