@@ -3,12 +3,11 @@ Getting Started
 
 Prerequisites
 ~~~~~~~~~~~~~~~
-* cupl Codec (`download <https://github.com/cuplsensor/cuplcodec/releases>`_).
 * MSP-FET debugger (`TI <https://www.ti.com/tool/MSP-FET>`_).
 * GitHub Desktop (`download <https://desktop.github.com/>`_) or your choice of Git software.
 
-Fork and Clone the repository
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Fork and Clone the cupl Tag repository
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. image:: fork-and-clone.png
    :width: 400
@@ -30,9 +29,33 @@ Open the Code Composer Project
 .. image:: ccsimport.png
    :width: 400
 
-#. Ensure that cupltag\firmware is **checked**. Every other folder should be unchecked.
+#. Ensure that cupltag\\firmware is **checked**. Every other folder should be unchecked.
 #. Click Finish.
 #. The project is now open.
 
 .. image:: ccsopen.png
+   :width: 400
+
+Add the Reference to cupl Codec
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+#. Fork the cupl Codec repository on (`GitHub <https://github.com/cuplsensor/cuplcodec>`_).
+#. Clone this into a folder on your computer.
+#. In CCS, right click the cuplTag_firmware project.
+#. Select Properties from the context menu.
+#. In the Properties window, expand Resource on the left hand panel and select Linked Resources.
+
+.. image:: ccslinkedresources.png
+   :width: 400
+
+#. Double click the CUPLCODEC path variable. The Edit Variable window will appear.
+
+.. image:: ccseditpathvar.png
+   :width: 400
+
+#. Click the Folder... button. Select the Codec folder from step 2.
+#. Click Apply and Close.
+#. The cuplcodec_encoder project folder will now contain references to files inside cupl Codec.
+
+.. image:: ccsreferenceadded.png
    :width: 400
