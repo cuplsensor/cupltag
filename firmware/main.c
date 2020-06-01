@@ -478,7 +478,7 @@ tretcode init_errorcheck(tevent evt)
     if (resetsperloop < 50)
     {
         wdog_kick();
-        sample_init(status, err);
+        enc_init(status, err);
     }
 
     // Go to LPM4 in the event of an error.
@@ -557,7 +557,7 @@ tretcode smpl_hdcread(tevent evt)
     // If event shows HDC interrupt read the temperature, otherwise tr_wait.
     hdc2010_read_temp(&temp, &rh);
 
-    if (sample_push(temp, rh) > 0)
+    if (enc_pushsample(temp, rh) > 0)
     {
         // Looping around
         //nvparams_cresetsperloop();
@@ -589,7 +589,7 @@ tretcode smpl_wait(tevent evt)
             rc = tr_scantimeout;
             stat_setscantimeout();
             status = stat_get(&err, nvparams_getresetsalltime());
-            sample_init(status, err);
+            enc_init(status, err);
         }
         else
         {
@@ -623,7 +623,7 @@ tretcode smpl_checkcounter(tevent evt)
     else
     {
         rc = tr_updatemin;
-        sample_updateendstop(minutecounter);
+        enc_setelapsed(minutecounter);
         // Check for a configuration text record.
         if (minutesSinceScan <= 1)
         {

@@ -27,7 +27,7 @@
 	</natures>
 	<linkedResources>
 		<link>
-			<name>cuplcodec_encoder</name>
+			<name>encoder</name>
 			<type>2</type>
 			<locationURI>CUPLCODEC/wscodec/encoder/pyencoder/c_encoder</locationURI>
 		</link>

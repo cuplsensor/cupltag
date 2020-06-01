@@ -15,6 +15,7 @@
 #define DEFAULT_SLEEPINTDAYS    0
 #define DEFAULT_RANDSTATE       0x4D4C
 #define MINUTES_PER_DAY         1440
+#define INTEGERFIELD_LENBYTES   4
 
 #pragma DATA_SECTION(nv, ".infoA");
 nv_t nv;

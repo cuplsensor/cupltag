@@ -11,7 +11,7 @@
 #include "defs.h"
 
 static char readbuffer[BLKSIZE];
-extern unsigned char md5block[64];
+extern unsigned char msgblock[64];
 
 #define PAYLOADSTART_SHORTREC_INDEX 6
 #define RECORDTYPE_SHORTREC_INDEX  5
@@ -81,13 +81,13 @@ int confignfc_readtext()
             if (payloadbyte == '>')
             {
                 searchstate = startcharsearch;
-                nvparams_write(cmd, md5block, md5index);
+                nvparams_write(cmd, msgblock, md5index);
 
                 md5index = 0;
             }
             else
             {
-                md5block[md5index++] = payloadbyte;
+                msgblock[md5index++] = payloadbyte;
             }
         }
 
