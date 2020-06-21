@@ -214,52 +214,53 @@ static void wdog_kick()
 static void start_timer(unsigned int intervalCycles)
 {
     // Start timer in continuous mode sourced by SMCLK
-        Timer_A_initContinuousModeParam initContParam = {0};
-        initContParam.clockSource = TIMER_A_CLOCKSOURCE_ACLK;
-        initContParam.clockSourceDivider = TIMER_A_CLOCKSOURCE_DIVIDER_8;
-        initContParam.timerInterruptEnable_TAIE = TIMER_A_TAIE_INTERRUPT_DISABLE;
-        initContParam.timerClear = TIMER_A_DO_CLEAR;
+        Timer_B_initContinuousModeParam initContParam = {0};
+        initContParam.clockSource = TIMER_B_CLOCKSOURCE_ACLK;
+        initContParam.clockSourceDivider = TIMER_B_CLOCKSOURCE_DIVIDER_8;
+        initContParam.timerInterruptEnable_TBIE = TIMER_B_TBIE_INTERRUPT_DISABLE;
+        initContParam.timerClear = TIMER_B_DO_CLEAR;
         initContParam.startTimer = false;
-        Timer_A_initContinuousMode(TIMER_A1_BASE, &initContParam);
+        Timer_B_initContinuousMode(TB1_BASE, &initContParam);
 
         //Initialise compare mode
-        Timer_A_clearCaptureCompareInterrupt(TIMER_A1_BASE, TIMER_A_CAPTURECOMPARE_REGISTER_0);
+        Timer_B_clearCaptureCompareInterrupt(TB1_BASE, TIMER_B_CAPTURECOMPARE_REGISTER_0);
 
-        Timer_A_initCompareModeParam initCompParam = {0};
-        initCompParam.compareRegister = TIMER_A_CAPTURECOMPARE_REGISTER_0;
-        initCompParam.compareInterruptEnable = TIMER_A_CAPTURECOMPARE_INTERRUPT_ENABLE;
-        initCompParam.compareOutputMode = TIMER_A_OUTPUTMODE_OUTBITVALUE;
+        Timer_B_initCompareModeParam initCompParam = {0};
+        initCompParam.compareRegister = TIMER_B_CAPTURECOMPARE_REGISTER_0;
+        initCompParam.compareInterruptEnable = TIMER_B_CAPTURECOMPARE_INTERRUPT_ENABLE;
+        initCompParam.compareOutputMode = TIMER_B_OUTPUTMODE_OUTBITVALUE;
         initCompParam.compareValue = intervalCycles;
-        Timer_A_initCompareMode(TIMER_A1_BASE, &initCompParam);
+        Timer_B_initCompareMode(TB1_BASE, &initCompParam);
 
-        Timer_A_startCounter(TIMER_A1_BASE, TIMER_A_CONTINUOUS_MODE);
+        Timer_B_startCounter(TB1_BASE, TIMER_B_CONTINUOUS_MODE);
 }
 
 static void syson()
 {
-    // Configure input pins
-    // P1.2 FD as input
-    // P1.1 UART RX as input
-    // P2.3 HDC_INT as input
-    // P2.7 EN as output low
+    // Configure I/O pins
+
+    // P3.5 nPRG as input
     GPIO_setAsInputPin(
-            GPIO_PORT_P1,
-            GPIO_PIN1
+            GPIO_PORT_P3,
+            GPIO_PIN5
     );
 
+    // P1.6 UART RX as input
     GPIO_setAsInputPin(
             GPIO_PORT_P1,
-            GPIO_PIN2
+            GPIO_PIN6
     );
 
+    // P4.3 HDC_INT as input
     GPIO_setAsInputPin(
-            GPIO_PORT_P2,
+            GPIO_PORT_P4,
             GPIO_PIN3
     );
 
+    // P4.2 EN as output high
     GPIO_setOutputHighOnPin(
-            GPIO_PORT_P2,
-            GPIO_PIN7
+            GPIO_PORT_P4,
+            GPIO_PIN2
     );
 
     start_timer(2*CP10MS);
@@ -268,19 +269,14 @@ static void syson()
 static void sysoff()
 {
     GPIO_setOutputLowOnPin(
-            GPIO_PORT_P2,
-            GPIO_PIN7
+            GPIO_PORT_P4,
+            GPIO_PIN2
     );
 }
 
 static void enablefd()
 {
-    /* Enable FDint P1.2 falling edge interrupt. */
-    P1OUT &= ~BIT2;                              // select pull-down mode
-    P1REN |= BIT2;                              // enable internal pull up/down, 1
-    P1IES |= BIT2; // Falling edge detect.
-    P1IFG &= ~BIT2; // Clear interrupt flag.
-    P1IE |= BIT2; // Allow interrupt.
+
 }
 
 // sensorinit -> SYSON. FDint OFF. RTCint OFF.
@@ -303,14 +299,14 @@ tretcode init_state(tevent evt)
     // Initialise IO to reduce power.
     // P1.2 FD as input
     // P1.1 UART RX as input
-    // P2.3 HDC_INT as input
+    // P4.2 HDC_INT as input
     // P2.7 EN as output low
     P1DIR = 0xF9; P2DIR = 0xF7; P3DIR = 0xFF; P4DIR = 0xFF;
     P5DIR = 0xFF; P6DIR = 0xFF; P7DIR = 0xFF; P8DIR = 0xFF;
     P1OUT = 0x00; P2OUT = 0x00; P3OUT = 0x00; P4OUT = 0x00;
     P5OUT = 0x00; P6OUT = 0x00; P7OUT = 0x00; P8OUT = 0x00;
 
-    P4SEL0 |= BIT1 | BIT2;                  // set XT1 pin as second function
+    P2SEL1 |= BIT6 | BIT7;                  // P2.6~P2.7: crystal pins
 
     // Disable the GPIO power-on default high-impedance mode
     // to activate previously configured port settings
@@ -525,10 +521,10 @@ tretcode ser_waitfd(tevent evt)
 
 tretcode smpl_hdcreq(tevent evt)
 {
-    /* Enable HDCint P2.3 rising edge interrupt. */
-    P2IFG &= ~BIT3; // Clear flag.
-    P2IES |= BIT3 ; // Falling edge detect.
-    P2IE |= BIT3 ; // Allow interrupt.
+    /* Enable HDCint P4.2 rising edge interrupt. */
+    P4IFG &= ~BIT2; // Clear flag.
+    P4IES |= BIT2 ; // Falling edge detect.
+    P4IE |= BIT2 ; // Allow interrupt.
 
     hdc2010_startconv();
 
@@ -551,8 +547,8 @@ tretcode smpl_hdcread(tevent evt)
 {
     int temp, rh;
 
-    /* Disable HDCint P2.3 rising edge interrupt. */
-    P2IE &= ~BIT3 ; // Disable interrupt on port 2 bit 3.
+    /* Disable HDCint P4.2 rising edge interrupt. */
+    P4IE &= ~BIT2 ; // Disable interrupt on port 2 bit 3.
 
     // If event shows HDC interrupt read the temperature, otherwise tr_wait.
     hdc2010_read_temp(&temp, &rh);
@@ -594,7 +590,7 @@ tretcode smpl_wait(tevent evt)
         else
         {
             /* Disable FDint P1.2 falling edge interrupt. */
-            P1IE &= ~BIT2 ; // Disable interrupt.
+            //P1IE &= ~BIT2 ; // Disable interrupt.
             rc = tr_timeout;
         }
     }
@@ -663,17 +659,16 @@ tretcode end_state(tevent evt)
 {
     // Turn peripheral power off.
     sysoff();
-    /* Disable HDCint P2.3 rising edge interrupt. */
-    //P1IE = 0;
-    P2IE = 0 ; // Disable interrupt on port 2 bit 3.
+    /* Disable HDCint P4.2 rising edge interrupt. */
+    P4IE = 0 ; // Disable interrupt on port 2 bit 3.
     // Go to deep sleep mode.
     WDTCTL = WDTPW | WDTHOLD;        // Hold the watchdog.
     PMMCTL0_H = PMMPW_H;                // Open PMM Registers for write
     PMMCTL0_L &= ~(SVSHE);              // Disable high-side SVS
     PMMCTL0_L |= PMMREGOFF;             // and set PMMREGOFF
     PMMCTL0_H = 0;                      // Lock PMM Registers
-    TA0CTL = MC_0;                   //turn off timer A
-    TA1CTL = MC_0;                   //turn off timer A
+    TB0CTL = MC_0;                   //turn off timer A
+    TB1CTL = MC_0;                   //turn off timer A
     RTCCTL = 0;                      // Stop the RTC.
     __delay_cycles(10000);
     // Enable field detect for wakeup.
@@ -740,39 +735,17 @@ void main(void)
 //
 //******************************************************************************
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
-#pragma vector=TIMER1_A0_VECTOR
+#pragma vector=TIMER1_B0_VECTOR
 __interrupt
 #elif defined(__GNUC__)
 __attribute__((interrupt(TIMER1_A0_VECTOR)))
 #endif
-void TIMER1_A0_ISR(void)
+void TIMER1_B0_ISR(void)
 {
-    Timer_A_stop(TIMER_A1_BASE);
-    Timer_A_disableInterrupt(TIMER_A1_BASE);
+    Timer_B_stop(TB1_BASE);
+    Timer_B_disableInterrupt(TB1_BASE);
     timerFlag = 1;
     __bic_SR_register_on_exit(LPM3_bits); // Clear LPM bits upon ISR Exit
-}
-
-//******************************************************************************
-//
-//This is the PORT_1 interrupt vector service routine.
-//
-//******************************************************************************
-#if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
-#pragma vector=PORT1_VECTOR
-__interrupt void Port_1(void)
-#elif defined(__GNUC__)
-void __attribute__ ((interrupt(PORT1_VECTOR))) Port_1 (void)
-#else
-#error Compiler not supported!
-#endif
-{
-  P1IFG &= ~BIT2;                           // P2.3 IFG cleared
-
-  // P1.2 is high.
-  fdFlag = 1;
-  __bic_SR_register_on_exit(LPM3_bits);     // Clear LPM bits upon ISR Exit
-
 }
 
 
@@ -782,16 +755,16 @@ void __attribute__ ((interrupt(PORT1_VECTOR))) Port_1 (void)
 //
 //******************************************************************************
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
-#pragma vector=PORT2_VECTOR
-__interrupt void Port_2(void)
+#pragma vector=PORT4_VECTOR
+__interrupt void Port_4(void)
 #elif defined(__GNUC__)
 void __attribute__ ((interrupt(PORT2_VECTOR))) Port_2 (void)
 #else
 #error Compiler not supported!
 #endif
 {
-  P2IFG &= ~BIT3;                           // P2.3 IFG cleared
-  if ((P2IN & BIT3) == 0)
+  P4IFG &= ~BIT2;                           // P2.3 IFG cleared
+  if ((P4IN & BIT2) == 0)
   {
       // P2.3 is low.
       hdcFlag = 1;

@@ -147,7 +147,7 @@ t_uretcode uart_init(t_uevent evt)
 
 
     // Configure ports for UART.
-    P1SEL0 |= BIT0 + BIT1;
+    P1SEL0 |= BIT6 + BIT7;
 
 
     return rc_ok;

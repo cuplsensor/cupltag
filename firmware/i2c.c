@@ -25,8 +25,8 @@ void i2c_init()
     * Set Pin 6, 7 to input Secondary Module Function, (UCB2SIMO/UCB2SDA, UCB2SOMI/UCB2SCL).
     */
     GPIO_setAsPeripheralModuleFunctionInputPin(
-            GPIO_PORT_P5,
-            GPIO_PIN2 + GPIO_PIN3,
+            GPIO_PORT_P4,
+            GPIO_PIN6 + GPIO_PIN7,
             GPIO_PRIMARY_MODULE_FUNCTION
     );
 
