@@ -16,7 +16,7 @@ volatile bool nackFlag = false;
 volatile bool stopFlag = false;
 volatile bool restartRx = false;
 
-#define EUSCI_BASE  EUSCI_B0_BASE
+#define EUSCI_BASE  EUSCI_B1_BASE
 
 
 void i2c_init()
@@ -268,16 +268,16 @@ uint16_t i2c_read32(uint8_t slaveAddr, uint8_t regOffset, uint16_t * temp, uint1
 
 
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
-#pragma vector=USCI_B0_VECTOR
+#pragma vector=USCI_B1_VECTOR
 __interrupt
 #elif defined(__GNUC__)
-__attribute__((interrupt(USCI_B0_VECTOR)))
+__attribute__((interrupt(USCI_B1_VECTOR)))
 #endif
-void USCIB0_ISR(void)
+void USCIB1_ISR(void)
 {
     static uint8_t rxCount = 0;
     static uint8_t txCount = 0;
-    switch(__even_in_range(UCB0IV,0x1E))
+    switch(__even_in_range(UCB1IV,0x1E))
     {
     case 0x00: break;       // Vector 0: No interrupts break;
     case 0x02: break;       // Vector 2: ALIFG break;

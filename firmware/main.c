@@ -258,6 +258,12 @@ static void syson()
     );
 
     // P4.2 EN as output high
+    GPIO_setAsOutputPin(
+            GPIO_PORT_P4,
+            GPIO_PIN2
+    );
+
+
     GPIO_setOutputHighOnPin(
             GPIO_PORT_P4,
             GPIO_PIN2
