@@ -97,7 +97,7 @@ struct utransition ustate_transitions[] = {
 
 
 /* Global variables. */
-volatile uint8_t uartBuffer[15];
+volatile uint8_t uartBuffer[72]; // Must be bigger than the largest packet that can be recieved.
 volatile unsigned int bufIndex = 0;
 volatile int drdyFlag = 0;
 volatile int txDoneFlag = 0;

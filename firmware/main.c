@@ -307,7 +307,7 @@ tretcode init_state(tevent evt)
     // P1.1 UART RX as input
     // P4.2 HDC_INT as input
     // P2.7 EN as output low
-    P1DIR = 0xF9; P2DIR = 0xF7; P3DIR = 0xFF; P4DIR = 0xFF;
+    P1DIR = 0x3F; P2DIR = 0x3F; P3DIR = 0xDF; P4DIR = 0x00;
     P5DIR = 0xFF; P6DIR = 0xFF; P7DIR = 0xFF; P8DIR = 0xFF;
     P1OUT = 0x00; P2OUT = 0x00; P3OUT = 0x00; P4OUT = 0x00;
     P5OUT = 0x00; P6OUT = 0x00; P7OUT = 0x00; P8OUT = 0x00;
@@ -528,9 +528,9 @@ tretcode ser_waitfd(tevent evt)
 tretcode smpl_hdcreq(tevent evt)
 {
     /* Enable HDCint P4.2 rising edge interrupt. */
-    P4IFG &= ~BIT2; // Clear flag.
-    P4IES |= BIT2 ; // Falling edge detect.
-    P4IE |= BIT2 ; // Allow interrupt.
+    P4IFG &= ~BIT3; // Clear flag.
+    P4IES |= BIT3 ; // Falling edge detect.
+    P4IE |= BIT3 ; // Allow interrupt.
 
     hdc2010_startconv();
 
@@ -553,8 +553,8 @@ tretcode smpl_hdcread(tevent evt)
 {
     int temp, rh;
 
-    /* Disable HDCint P4.2 rising edge interrupt. */
-    P4IE &= ~BIT2 ; // Disable interrupt on port 2 bit 3.
+    /* Disable HDCint P4.3 rising edge interrupt. */
+    P4IE &= ~BIT3 ; // Disable interrupt on port 2 bit 3.
 
     // If event shows HDC interrupt read the temperature, otherwise tr_wait.
     hdc2010_read_temp(&temp, &rh);
@@ -769,10 +769,10 @@ void __attribute__ ((interrupt(PORT2_VECTOR))) Port_2 (void)
 #error Compiler not supported!
 #endif
 {
-  P4IFG &= ~BIT2;                           // P2.3 IFG cleared
-  if ((P4IN & BIT2) == 0)
+  P4IFG &= ~BIT3;                           // P2.3 IFG cleared
+  if ((P4IN & BIT3) == 0)
   {
-      // P2.3 is low.
+      // P4.3 is low.
       hdcFlag = 1;
       __bic_SR_register_on_exit(LPM3_bits);     // Clear LPM bits upon ISR Exit
   }

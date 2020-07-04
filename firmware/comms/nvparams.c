@@ -17,7 +17,7 @@
 #define MINUTES_PER_DAY         1440
 #define INTEGERFIELD_LENBYTES   4
 
-#pragma DATA_SECTION(nv, ".infoA");
+#pragma DATA_SECTION(nv, ".info");
 nv_t nv;
 
 unsigned int writtenfields = 0;
@@ -59,21 +59,21 @@ int nvparams_getresetsalltime()
 
 void nvparams_cresetsperloop()
 {
-    SYSCFG0 &= ~DFWP;                   // Program FRAM write enable
+    SYSCFG0 = FRWPPW | PFWP;                   // Program FRAM write enable
 
     nv.resetsperloop = 0;
 
-    SYSCFG0 |= DFWP;                    // Program FRAM write protected (not writable)
+    SYSCFG0 = FRWPPW | DFWP | PFWP;                    // Program FRAM write protected (not writable)
 }
 
 void nvparams_incrcounters()
 {
-    SYSCFG0 &= ~DFWP;                   // Program FRAM write enable
+    SYSCFG0 = FRWPPW | PFWP;                   // Program FRAM write enable
 
     nv.resetsperloop += 1;
     nv.resetsalltime += 1;
 
-    SYSCFG0 |= DFWP;                    // Program FRAM write protected (not writable)
+    SYSCFG0 = FRWPPW | DFWP | PFWP;                    // Program FRAM write protected (not writable)
 }
 
 
@@ -83,7 +83,7 @@ bool nvparams_write(char id, char * valptr, unsigned int payloadlen)
     char temp[INTEGERFIELD_LENBYTES + 1] = {0}; // Must be null terminated.
     int smplintervalmins;
 
-    SYSCFG0 &= ~DFWP;                   // Program FRAM write enable
+    SYSCFG0 = FRWPPW | PFWP;                   // Program FRAM write enable
 
     if ((id == 'w') && (payloadlen == sizeof(nv.serial)))
     {
@@ -114,12 +114,6 @@ bool nvparams_write(char id, char * valptr, unsigned int payloadlen)
         nv.smplintervalmins[1] = smplintervalmins >> 8;
         writtenfields |= BIT3;
     }
-    else if ((id == 'd') && (payloadlen <= INTEGERFIELD_LENBYTES))
-    {
-        strncpy(temp, valptr, payloadlen); // Copy to tparam to ensure null termination.
-        nv.sleepintervaldays = atoi(temp);
-        writtenfields |= BIT4;
-    }
     else if ((id == 'h') && (payloadlen == 1))
     {
         nv.httpsdisable = *valptr - 0x30;
@@ -129,26 +123,24 @@ bool nvparams_write(char id, char * valptr, unsigned int payloadlen)
     {
         nv.usehmac = *valptr - 0x30;
 
-        if (nv.usehmac == 0)
+        if ((nv.usehmac == 0) || (nv.usehmac == 1))
         {
-            writtenfields |= BIT1;
+            writtenfields |= BIT7;
         }
-
-        writtenfields |= BIT7;
     }
     else
     {
         validpacket = false;
     }
 
-    if ((writtenfields ^ (BIT0 | BIT1 | BIT2 | BIT3 | BIT4 | BIT5 | BIT6 | BIT7)) == 0)
+    if ((writtenfields ^ (BIT0 | BIT1 | BIT2 | BIT3 | BIT5 | BIT6 | BIT7)) == 0)
     {
         nv.allwritten = 0;
         nv.resetsperloop = 0;
         nv.resetsalltime = 0;
     }
 
-    SYSCFG0 |= DFWP;                    // Program FRAM write protected (not writable)
+    SYSCFG0 = FRWPPW | DFWP | PFWP;                    // Program FRAM write protected (not writable)
 
     return validpacket;
 }
