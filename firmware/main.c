@@ -9,24 +9,19 @@
 #include <stdlib.h>
 
 
-//*****************************************************************************
-//
-//Target frequency for SMCLK in kHz
-//
-//*****************************************************************************
-#define CS_SMCLK_DESIRED_FREQUENCY_IN_KHZ   16000
+#define CS_SMCLK_DESIRED_FREQUENCY_IN_KHZ   16000       /*!< Target frequency for SMCLK in kHz. */
 
-#define CS_XT1_CRYSTAL_FREQUENCY            32768
-#define CS_XT1_TIMEOUT                      65000
+#define CS_XT1_CRYSTAL_FREQUENCY            32768       /*!< Resonant frequency of the XT1 crystal in kHz. */
+#define CS_XT1_TIMEOUT                      65000       /*!< Timeout for XT1 to stabilise at the resonant frequency in SMCLK cycles. */
 
-#define CP10MS                                  41 // Counts per 10 millisecond at ACLK = 32768 kHz and 8 divider.
+#define CP10MS                                  41      /*!< ACLK Cycles Per 10 MilliSeconds. Assumes ACLK = 32768 kHz and a divide-by-8. */
 
-#define EXIT_STATE sc_error
-#define ENTRY_STATE sc_init
+#define EXIT_STATE sc_error                             /*!< State machine exit state. */
+#define ENTRY_STATE sc_init                             /*!< State machine entry state. */
 
-volatile int rtcFlag = 0;
-volatile int timerFlag = 0;
-volatile int hdcFlag = 0;
+volatile int rtcFlag = 0;                               /*!< Flag set by the Real-Time-Clock Interrupt Service Route. */
+volatile int timerFlag = 0;                             /*!< Flag set by the Timer Interrupt Service Routine. */
+volatile int hdcFlag = 0;                               /*!< Flag set by the HDC2021 humidity sensor data-ready Interrupt Service Routine. */
 
 typedef enum state_codes {
     sc_init,
@@ -120,19 +115,19 @@ struct transition state_transitions[] = {
 
                                          {sc_init_configcheck,  tr_ok,      sc_init_errorcheck},
                                          {sc_init_configcheck,  tr_fail,    sc_init_configcheck},
-                                         {sc_init_configcheck,  tr_wait,    sc_init_configcheck}, // Wait for serial number to be RXed.
+                                         {sc_init_configcheck,  tr_wait,    sc_init_configcheck},
 
                                          {sc_init_errorcheck,  tr_ok,      sc_init_rtc},
                                          {sc_init_errorcheck,  tr_fail,      sc_end},
 
-                                         {sc_init_rtc,      tr_ok,      sc_smpl_checkcounter}, // sc_smpl_checkcounter
+                                         {sc_init_rtc,      tr_ok,      sc_smpl_checkcounter},
 
                                          {sc_smpl_hdcreq,   tr_ok,      sc_smpl_hdcwait},
 
                                          {sc_smpl_hdcwait,  tr_ok,      sc_smpl_hdcread},
                                          {sc_smpl_hdcwait,  tr_wait,    sc_smpl_hdcwait},
 
-                                         {sc_smpl_hdcread,  tr_ok,      sc_smpl_wait}, // sc_smpl_wait
+                                         {sc_smpl_hdcread,  tr_ok,      sc_smpl_wait},
                                          {sc_smpl_hdcread,  tr_fail,    sc_error},
 
                                          {sc_smpl_wait,     tr_timeout,     sc_rtc_reqmemon},
