@@ -8,17 +8,6 @@
 #include "defs.h"
 #include <stdlib.h>
 
-#define SLAVE_ADDRESS 0x5F
-
-volatile uint8_t receiveData;
-volatile int whoami;
-
-//*****************************************************************************
-//
-//Specify Expected Receive data count.
-//
-//*****************************************************************************
-#define RXCOUNT 0x05
 
 //*****************************************************************************
 //
@@ -27,20 +16,10 @@ volatile int whoami;
 //*****************************************************************************
 #define CS_SMCLK_DESIRED_FREQUENCY_IN_KHZ   16000
 
-//*****************************************************************************
-//
-//SMCLK/FLLRef Ratio
-//
-//*****************************************************************************
-#define CS_SMCLK_FLLREF_RATIO   30
+#define CS_XT1_CRYSTAL_FREQUENCY            32768
+#define CS_XT1_TIMEOUT                      65000
 
-#define LED_PORT    GPIO_PORT_P3
-#define LED_PIN     GPIO_PIN2
-
-#define CS_XT1_CRYSTAL_FREQUENCY 32768
-#define CS_XT1_TIMEOUT 65000
-
-#define CP10MS 41 // Counts per 10 millisecond at ACLK = 32768 kHz and 8 divider.
+#define CP10MS                                  41 // Counts per 10 millisecond at ACLK = 32768 kHz and 8 divider.
 
 #define EXIT_STATE sc_error
 #define ENTRY_STATE sc_init
@@ -51,11 +30,10 @@ volatile int hdcFlag = 0;
 
 typedef enum state_codes {
     sc_init,
-    sc_init_reqsyson,
-    sc_init_waitsyson,
-    sc_init_ntagandfd,
-    sc_init_nfccheck,
-    sc_init_serialcheck,
+    sc_init_reqmemon,
+    sc_init_waitmemon,
+    sc_init_ntag,
+    sc_init_configcheck,
     sc_init_errorcheck,
     sc_init_rtc,
     sc_smpl_checkcounter,
@@ -63,8 +41,8 @@ typedef enum state_codes {
     sc_smpl_hdcwait,
     sc_smpl_hdcread,
     sc_smpl_wait,
-    sc_rtc_reqsyson,
-    sc_rtc_waitsyson,
+    sc_rtc_reqmemon,
+    sc_rtc_waitmemon,
     sc_end,
     sc_error 
 } tstate;
@@ -87,11 +65,10 @@ typedef enum event_codes {
 
 // https://stackoverflow.com/questions/1371460/state-machines-tutorials
 tretcode init_state(tevent);
-tretcode init_reqsyson(tevent);
-tretcode init_waitsyson(tevent);
+tretcode init_reqmemon(tevent);
+tretcode init_waitmemon(tevent);
 tretcode init_ntag(tevent);
-tretcode init_nfccheck(tevent);
-tretcode init_serialcheck(tevent);
+tretcode init_configcheck(tevent);
 tretcode init_errorcheck(tevent);
 tretcode init_rtc(tevent);
 tretcode smpl_checkcounter(tevent);
@@ -99,19 +76,18 @@ tretcode smpl_hdcreq(tevent);
 tretcode smpl_hdcwait(tevent);
 tretcode smpl_hdcread(tevent);
 tretcode smpl_wait(tevent);
-tretcode rtc_reqsyson(tevent);
-tretcode rtc_waitsyson(tevent);
+tretcode rtc_reqmemon(tevent);
+tretcode rtc_waitmemon(tevent);
 tretcode end_state(tevent);
 tretcode error_state(tevent);
 
 /* array and enum below must be in sync! */
 tretcode (* state_fcns[])(tevent) = {
                           init_state,
-                          init_reqsyson,
-                          init_waitsyson,
+                          init_reqmemon,
+                          init_waitmemon,
                           init_ntag,
-                          init_nfccheck,
-                          init_serialcheck,
+                          init_configcheck,
                           init_errorcheck,
                           init_rtc,
                           smpl_checkcounter,
@@ -119,8 +95,8 @@ tretcode (* state_fcns[])(tevent) = {
                           smpl_hdcwait,
                           smpl_hdcread,
                           smpl_wait,
-                          rtc_reqsyson,
-                          rtc_waitsyson,
+                          rtc_reqmemon,
+                          rtc_waitmemon,
                           end_state,
                           error_state
 };
@@ -133,20 +109,18 @@ struct transition {
 };
 
 struct transition state_transitions[] = {
-                                         {sc_init,          tr_ok,      sc_init_reqsyson},
+                                         {sc_init,          tr_ok,      sc_init_reqmemon},
 
-                                         {sc_init_reqsyson, tr_ok,      sc_init_waitsyson},
+                                         {sc_init_reqmemon, tr_ok,      sc_init_waitmemon},
 
-                                         {sc_init_waitsyson, tr_ok,      sc_init_ntagandfd},
-                                         {sc_init_waitsyson, tr_wait,    sc_init_waitsyson},
+                                         {sc_init_waitmemon, tr_ok,      sc_init_ntag},
+                                         {sc_init_waitmemon, tr_wait,    sc_init_waitmemon},
 
-                                         {sc_init_ntagandfd, tr_ok,     sc_init_nfccheck},
+                                         {sc_init_ntag,      tr_ok,      sc_init_configcheck},
 
-                                         {sc_init_nfccheck, tr_ok,     sc_init_serialcheck},
-
-                                         {sc_init_serialcheck,  tr_ok,      sc_init_errorcheck},
-                                         {sc_init_serialcheck,  tr_fail,    sc_init_serialcheck},
-                                         {sc_init_serialcheck,  tr_wait,    sc_init_serialcheck}, // Wait for serial number to be RXed.
+                                         {sc_init_configcheck,  tr_ok,      sc_init_errorcheck},
+                                         {sc_init_configcheck,  tr_fail,    sc_init_configcheck},
+                                         {sc_init_configcheck,  tr_wait,    sc_init_configcheck}, // Wait for serial number to be RXed.
 
                                          {sc_init_errorcheck,  tr_ok,      sc_init_rtc},
                                          {sc_init_errorcheck,  tr_fail,      sc_end},
@@ -161,16 +135,16 @@ struct transition state_transitions[] = {
                                          {sc_smpl_hdcread,  tr_ok,      sc_smpl_wait}, // sc_smpl_wait
                                          {sc_smpl_hdcread,  tr_fail,    sc_error},
 
-                                         {sc_smpl_wait,     tr_timeout,     sc_rtc_reqsyson},
+                                         {sc_smpl_wait,     tr_timeout,     sc_rtc_reqmemon},
                                          {sc_smpl_wait,     tr_wait,        sc_smpl_wait},
 
-                                         {sc_rtc_reqsyson,  tr_ok,      sc_rtc_waitsyson},
+                                         {sc_rtc_reqmemon,  tr_ok,      sc_rtc_waitmemon},
 
                                          {sc_smpl_checkcounter, tr_hdcreq,      sc_smpl_hdcreq},
                                          {sc_smpl_checkcounter, tr_updatemin,   sc_smpl_wait},
 
-                                         {sc_rtc_waitsyson, tr_ok, sc_smpl_checkcounter},
-                                         {sc_rtc_waitsyson, tr_wait,   sc_rtc_waitsyson}
+                                         {sc_rtc_waitmemon, tr_ok, sc_smpl_checkcounter},
+                                         {sc_rtc_waitmemon, tr_wait,   sc_rtc_waitmemon}
                                          
 };
 
@@ -226,7 +200,7 @@ static void start_timer(unsigned int intervalCycles)
         Timer_B_startCounter(TB1_BASE, TIMER_B_CONTINUOUS_MODE);
 }
 
-static void syson()
+static void memon()
 {
     // Configure I/O pins
 
@@ -263,7 +237,7 @@ static void syson()
     start_timer(2*CP10MS);
 }
 
-static void sysoff()
+static void memoff()
 {
     GPIO_setOutputLowOnPin(
             GPIO_PORT_P4,
@@ -271,12 +245,12 @@ static void sysoff()
     );
 }
 
-// sensorinit -> SYSON. FDint OFF. RTCint OFF.
-// waitforserial -> SYSOFF. FDint ON. RTCint OFF.
-// reqsensor -> SYSON. FDint ON. HDCint ON. RTCint OFF.
-// updateurl -> SYSON. FDint ON. RTCint OFF.
-// updatesc -> SYSON. FDint OFF. RTCint ON. wait a few seconds before leaving this state as hysteresis.
-// waitrtc -> SYSOFF. FDint ON. RTCint ON.
+// sensorinit -> memon. FDint OFF. RTCint OFF.
+// waitforserial -> memoff. FDint ON. RTCint OFF.
+// reqsensor -> memon. FDint ON. HDCint ON. RTCint OFF.
+// updateurl -> memon. FDint ON. RTCint OFF.
+// updatesc -> memon. FDint OFF. RTCint ON. wait a few seconds before leaving this state as hysteresis.
+// waitrtc -> memoff. FDint ON. RTCint ON.
 
 tretcode init_state(tevent evt)
 {
@@ -364,15 +338,15 @@ tretcode init_state(tevent evt)
     return tr_ok;
 }
 
-static tretcode reqsyson(tevent evt)
+static tretcode reqmemon(tevent evt)
 {
     /* Power up the I2C bus. */
-    syson();
+    memon();
 
     return tr_ok;
 }
 
-static tretcode waitsyson(tevent evt)
+static tretcode waitmemon(tevent evt)
 {
     tretcode rc = tr_wait;
 
@@ -387,14 +361,14 @@ static tretcode waitsyson(tevent evt)
     return rc;
 }
 
-tretcode init_reqsyson(tevent evt)
+tretcode init_reqmemon(tevent evt)
 {
-    return reqsyson(evt);
+    return reqmemon(evt);
 }
 
-tretcode init_waitsyson(tevent evt)
+tretcode init_waitmemon(tevent evt)
 {
-    return waitsyson(evt);
+    return waitmemon(evt);
 }
 
 tretcode init_ntag(tevent evt)
@@ -402,27 +376,17 @@ tretcode init_ntag(tevent evt)
     /* Initialise the NTAG. */
     nt3h_init();
 
+    // Checks for an NFC text record.
+    if (confignfc_check())
+    {
+        confignfc_readtext(); // Configure from text records.
+    }
+
     /* Read the whoami registers of both the NT3H and the HDC2010. */
     return tr_ok;
 }
 
-tretcode init_nfccheck(tevent evt)
-{
-    // Checks for an NFC text record.
-    tretcode rc;
-
-    // Read from the NFC tag.
-    if (confignfc_check())
-    {
-        confignfc_readtext();
-    }
-
-    rc = tr_ok;
-
-    return rc;
-}
-
-tretcode init_serialcheck(tevent evt)
+tretcode init_configcheck(tevent evt)
 {
     tretcode rc;
     int nPRG;
@@ -547,8 +511,8 @@ tretcode smpl_hdcread(tevent evt)
         nvparams_cresetsperloop();
     }
 
-    /* Power down the I2C bus. */
-    sysoff();
+    /* Power down the MEM domain. */
+    memoff();
 
     return tr_ok;
 }
@@ -594,7 +558,7 @@ tretcode smpl_checkcounter(tevent evt)
         }
 
         /* Power down peripherals on the I2C bus. */
-        sysoff();
+        memoff();
     }
 
     if (minutecounter < nvparams_getsmplintmins()-1)
@@ -609,20 +573,20 @@ tretcode smpl_checkcounter(tevent evt)
     return rc;
 }
 
-tretcode rtc_reqsyson(tevent evt)
+tretcode rtc_reqmemon(tevent evt)
 {
-    return reqsyson(evt);
+    return reqmemon(evt);
 }
 
-tretcode rtc_waitsyson(tevent evt)
+tretcode rtc_waitmemon(tevent evt)
 {
-    return waitsyson(evt);
+    return waitmemon(evt);
 }
 
 tretcode end_state(tevent evt)
 {
     // Turn peripheral power off.
-    sysoff();
+    memoff();
     /* Disable HDCint P4.2 rising edge interrupt. */
     P4IE = 0 ; // Disable interrupt on port 2 bit 3.
     // Go to deep sleep mode.
@@ -638,8 +602,6 @@ tretcode end_state(tevent evt)
     // Deep sleep.
     __bis_SR_register(LPM4_bits | GIE);
 }
-
-
 
 void main(void)
 {
@@ -720,7 +682,7 @@ void __attribute__ ((interrupt(PORT2_VECTOR))) Port_2 (void)
 #error Compiler not supported!
 #endif
 {
-  P4IFG &= ~BIT3;                           // P2.3 IFG cleared
+  P4IFG &= ~BIT3;                           // P4.3 IFG cleared
   if ((P4IN & BIT3) == 0)
   {
       // P4.3 is low.
