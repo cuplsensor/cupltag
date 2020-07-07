@@ -63,7 +63,7 @@ void nvparams_cresetsperloop()
 
     nv.resetsperloop = 0;
 
-    SYSCFG0 = FRWPPW | DFWP | PFWP;                    // Program FRAM write protected (not writable)
+    SYSCFG0 = FRWPPW | DFWP | PFWP;           // Program FRAM write protected (not writable)
 }
 
 void nvparams_incrcounters()
@@ -73,7 +73,7 @@ void nvparams_incrcounters()
     nv.resetsperloop += 1;
     nv.resetsalltime += 1;
 
-    SYSCFG0 = FRWPPW | DFWP | PFWP;                    // Program FRAM write protected (not writable)
+    SYSCFG0 = FRWPPW | DFWP | PFWP;             // Program FRAM write protected (not writable)
 }
 
 

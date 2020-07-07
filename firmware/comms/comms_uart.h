@@ -23,6 +23,6 @@ typedef enum ustat {
 
 
 /* Function prototypes. */
-t_ustat uart_run();
+t_ustat uart_run(int nPRG);
 
 #endif /* COMMS_UART_H_ */

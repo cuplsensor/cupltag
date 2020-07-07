@@ -46,11 +46,8 @@ volatile int whoami;
 #define ENTRY_STATE sc_init
 
 volatile int rtcFlag = 0;
-volatile int fdFlag = 0;
 volatile int timerFlag = 0;
 volatile int hdcFlag = 0;
-
-int minutesSinceScan = 0;
 
 typedef enum state_codes {
     sc_init,
@@ -77,16 +74,12 @@ typedef enum ret_codes {
     tr_hdcreq,
     tr_updatemin,
     tr_fail,
-    tr_fd,
-    tr_scantimeout,
     tr_timeout,
-    tr_repeat,
     tr_wait
 } tretcode;
 
 typedef enum event_codes {
     evt_none,
-    evt_fd,
     evt_rtc,
     evt_timerfinished,
     evt_hdcint
@@ -96,7 +89,7 @@ typedef enum event_codes {
 tretcode init_state(tevent);
 tretcode init_reqsyson(tevent);
 tretcode init_waitsyson(tevent);
-tretcode init_ntagandfd(tevent);
+tretcode init_ntag(tevent);
 tretcode init_nfccheck(tevent);
 tretcode init_serialcheck(tevent);
 tretcode init_errorcheck(tevent);
@@ -116,7 +109,7 @@ tretcode (* state_fcns[])(tevent) = {
                           init_state,
                           init_reqsyson,
                           init_waitsyson,
-                          init_ntagandfd,
+                          init_ntag,
                           init_nfccheck,
                           init_serialcheck,
                           init_errorcheck,
@@ -152,7 +145,7 @@ struct transition state_transitions[] = {
                                          {sc_init_nfccheck, tr_ok,     sc_init_serialcheck},
 
                                          {sc_init_serialcheck,  tr_ok,      sc_init_errorcheck},
-                                         {sc_init_serialcheck,  tr_fail,    sc_init_serialcheck}, // No serial number yet.
+                                         {sc_init_serialcheck,  tr_fail,    sc_init_serialcheck},
                                          {sc_init_serialcheck,  tr_wait,    sc_init_serialcheck}, // Wait for serial number to be RXed.
 
                                          {sc_init_errorcheck,  tr_ok,      sc_init_rtc},
@@ -169,8 +162,6 @@ struct transition state_transitions[] = {
                                          {sc_smpl_hdcread,  tr_fail,    sc_error},
 
                                          {sc_smpl_wait,     tr_timeout,     sc_rtc_reqsyson},
-                                         {sc_smpl_wait,     tr_scantimeout, sc_end},
-                                         {sc_smpl_wait,     tr_fd,          sc_smpl_wait},
                                          {sc_smpl_wait,     tr_wait,        sc_smpl_wait},
 
                                          {sc_rtc_reqsyson,  tr_ok,      sc_rtc_waitsyson},
@@ -278,11 +269,6 @@ static void sysoff()
             GPIO_PORT_P4,
             GPIO_PIN2
     );
-}
-
-static void enablefd()
-{
-
 }
 
 // sensorinit -> SYSON. FDint OFF. RTCint OFF.
@@ -411,13 +397,12 @@ tretcode init_waitsyson(tevent evt)
     return waitsyson(evt);
 }
 
-tretcode init_ntagandfd(tevent evt)
+tretcode init_ntag(tevent evt)
 {
     /* Initialise the NTAG. */
     nt3h_init();
 
     /* Read the whoami registers of both the NT3H and the HDC2010. */
-
     return tr_ok;
 }
 
@@ -440,12 +425,18 @@ tretcode init_nfccheck(tevent evt)
 tretcode init_serialcheck(tevent evt)
 {
     tretcode rc;
-    t_ustat uartstatus = uart_run();
+    int nPRG;
+    t_ustat uartstatus;
 
     // Kick the watchdog.
     wdog_kick();
 
-    // Check serial present here.
+    // Read the nPRG pin
+    nPRG = GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN5);
+
+    uartstatus = uart_run(nPRG);
+
+    // Continue if serial present and nPRG de-asserted.
     if (uartstatus == ustat_running)
     {
         rc = tr_fail;
@@ -497,8 +488,6 @@ tretcode init_errorcheck(tevent evt)
     return rc;
 }
 
-
-
 tretcode init_rtc(tevent evt)
 {
     // Enable Supply voltage supervisor
@@ -516,13 +505,6 @@ tretcode init_rtc(tevent evt)
 tretcode error_state(tevent evt)
 {
     return tr_wait;
-}
-
-tretcode ser_waitfd(tevent evt)
-{
-    //htsm_writenewboxurl();
-
-    return tr_ok;
 }
 
 tretcode smpl_hdcreq(tevent evt)
@@ -562,7 +544,7 @@ tretcode smpl_hdcread(tevent evt)
     if (enc_pushsample(temp, rh) > 0)
     {
         // Looping around
-        //nvparams_cresetsperloop();
+        nvparams_cresetsperloop();
     }
 
     /* Power down the I2C bus. */
@@ -576,34 +558,13 @@ tretcode smpl_hdcread(tevent evt)
 tretcode smpl_wait(tevent evt)
 {
     tretcode rc;
-    bool err = false;
-    unsigned int status;
 
     // Kick the watchdog.
     wdog_kick();
 
-    enablefd();
-
     if (evt == evt_rtc)
     {
-        if (minutesSinceScan++ > nvparams_getsleepintmins())
-        {
-            rc = tr_scantimeout;
-            stat_setscantimeout();
-            status = stat_get(&err, nvparams_getresetsalltime());
-            enc_init(status, err);
-        }
-        else
-        {
-            /* Disable FDint P1.2 falling edge interrupt. */
-            //P1IE &= ~BIT2 ; // Disable interrupt.
-            rc = tr_timeout;
-        }
-    }
-    else if (evt == evt_fd)
-    {
-        rc = tr_fd;
-        minutesSinceScan = 0;
+        rc = tr_timeout;
     }
     else
     {
@@ -627,15 +588,12 @@ tretcode smpl_checkcounter(tevent evt)
         rc = tr_updatemin;
         enc_setelapsed(minutecounter);
         // Check for a configuration text record.
-        if (minutesSinceScan <= 1)
+        if (confignfc_check())
         {
-            if (confignfc_check())
-            {
-                PMMCTL0 = PMMPW | PMMSWPOR;
-            }
-
+            PMMCTL0 = PMMPW | PMMSWPOR; // Reset if a text record has been found.
         }
-        /* Power down the I2C bus. */
+
+        /* Power down peripherals on the I2C bus. */
         sysoff();
     }
 
@@ -677,8 +635,6 @@ tretcode end_state(tevent evt)
     TB1CTL = MC_0;                   //turn off timer A
     RTCCTL = 0;                      // Stop the RTC.
     __delay_cycles(10000);
-    // Enable field detect for wakeup.
-    enablefd();
     // Deep sleep.
     __bis_SR_register(LPM4_bits | GIE);
 }
@@ -695,12 +651,7 @@ void main(void)
 
     while (1) {
         // Process events
-        if (fdFlag)
-        {
-            fdFlag = 0;
-            evt = evt_fd;
-        }
-        else if (rtcFlag)
+        if (rtcFlag)
         {
             rtcFlag = 0;
             evt = evt_rtc;
@@ -791,11 +742,6 @@ void __attribute__ ((interrupt(RTC_VECTOR))) RTC_ISR (void)
     {
         case RTCIV_NONE : break;            // No interrupt pending
         case RTCIV_RTCIF:                   // RTC Overflow
-            // Toggle LED on P1.0
-            //P1OUT ^= BIT0;
-
-            // Store P1OUT value in backup memory register
-            //*(unsigned int *)BKMEM_BASE = P1OUT;
             rtcFlag = 1;
             __bic_SR_register_on_exit(LPM3_bits); // Clear LPM bits upon ISR Exit
             break;

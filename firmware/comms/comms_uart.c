@@ -20,7 +20,8 @@ typedef enum uart_ret_codes {
 typedef enum uart_event_codes {
     evt_none,
     evt_rxdone,
-    evt_txdone
+    evt_txdone,
+    evt_progmode
 } t_uevent;
 
 typedef enum uart_state_codes {
@@ -166,7 +167,7 @@ t_uretcode uart_checkparams(t_uevent evt)
 {
     t_uretcode rc = rc_fail;
 
-    if (nvparams_allwritten())
+    if (nvparams_allwritten() && (evt != evt_progmode))
     {
         rc = rc_ok;
     }
@@ -265,7 +266,7 @@ t_uretcode uart_error(t_uevent evt)
     return rc;
 }
 
-t_ustat uart_run()
+t_ustat uart_run(int nPRG)
 {
     t_ustat status = ustat_running;
     t_uevent evt = evt_none;
@@ -281,6 +282,10 @@ t_ustat uart_run()
     {
         txDoneFlag = 0;
         evt = evt_txdone;
+    }
+    else if (!nPRG)
+    {
+        evt = evt_progmode;
     }
 
     state_fun = ustate_fcns[cur_state];
