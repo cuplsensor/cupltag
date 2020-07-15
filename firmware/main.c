@@ -197,20 +197,6 @@ static void start_timer(unsigned int intervalCycles)
 
 static void memon()
 {
-    // Configure I/O pins
-
-    // P3.5 nPRG as input
-    GPIO_setAsInputPin(
-            GPIO_PORT_P3,
-            GPIO_PIN5
-    );
-
-    // P1.6 UART RX as input
-    GPIO_setAsInputPin(
-            GPIO_PORT_P1,
-            GPIO_PIN6
-    );
-
     // P4.3 HDC_INT as input
     GPIO_setAsInputPin(
             GPIO_PORT_P4,
@@ -223,17 +209,18 @@ static void memon()
             GPIO_PIN2
     );
 
-
     GPIO_setOutputHighOnPin(
             GPIO_PORT_P4,
             GPIO_PIN2
     );
+
 
     start_timer(2*CP10MS);
 }
 
 static void memoff()
 {
+    // P4.2 EN as output low.
     GPIO_setOutputLowOnPin(
             GPIO_PORT_P4,
             GPIO_PIN2
@@ -329,6 +316,18 @@ tretcode init_state(tevent evt)
     // Enable watchdog timer.
     wdog_kick();
 
+    // P3.5 nPRG as input
+    GPIO_setAsInputPin(
+            GPIO_PORT_P3,
+            GPIO_PIN5
+    );
+
+    // P1.6 UART RX as input
+    GPIO_setAsInputPin(
+            GPIO_PORT_P1,
+            GPIO_PIN6
+    );
+
 
     return tr_ok;
 }
@@ -368,14 +367,16 @@ tretcode init_waitmemon(tevent evt)
 
 tretcode init_ntag(tevent evt)
 {
-    /* Initialise the NTAG. */
-    nt3h_init();
-
     // Checks for an NFC text record.
     if (confignfc_check())
     {
         confignfc_readtext(); // Configure from text records.
     }
+
+
+    /* Initialise the NTAG. */
+    nt3h_init();
+
 
     /* Read the whoami registers of both the NT3H and the HDC2010. */
     return tr_ok;
@@ -596,6 +597,7 @@ tretcode end_state(tevent evt)
     __delay_cycles(10000);
     // Deep sleep.
     __bis_SR_register(LPM4_bits | GIE);
+    return tr_ok; // Never reached.
 }
 
 void main(void)

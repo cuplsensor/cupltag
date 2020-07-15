@@ -11,6 +11,8 @@
 #include "stdint.h"
 #include <string.h>
 
+static char __version__[] = "HT04_F1_C1";
+
 typedef enum uart_ret_codes {
     rc_ok,
     rc_fail,
@@ -214,8 +216,29 @@ t_uretcode uart_pcktrxed(t_uevent evt)
     UCA0IE &= ~UCRXIE;
 
     // Process packet here
-    validpacket = nvparams_write(id, &uartBuffer[INDEX_VAL], len);
+    if (id == 'z') {
+        PMMCTL0 = PMMPW | PMMSWPOR; // Soft Power on Reset.
+    }
+    else if (id == 'y') {
+        __disable_interrupt();      // Disable interrupts
+        UCA0CTL1 = UCSWRST;          // Reset the USCI state machine.
+        RTCCTL   = 0;                // Stop the RTC
+        TB0CTL   = MC_0;             // Stop Timer B
+        TB1CTL   = MC_0;
+        WDTCTL   = WDTPW | WDTHOLD;  // Hold the watchdog.
+        ((void (*)())0x1000)();      // Jump to BSL.
+    }
+    else if (id == 'x')
+    {
+        validpacket = true;
+        strncpy(uartBuffer, __version__, sizeof(__version__));
+    }
+    else {
+        validpacket = nvparams_write(id, &uartBuffer[INDEX_VAL], len);
+    }
 
+
+    // Respond with an error.
     if (validpacket == false)
     {
         strncpy(uartBuffer, "<e>", sizeof(uartBuffer));
