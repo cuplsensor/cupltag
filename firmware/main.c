@@ -287,11 +287,13 @@ tretcode init_state(tevent evt)
             CS_CLOCK_DIVIDER_1
     );
 
+
     //Set Ratio and Desired MCLK Frequency  and initialize DCO
     error = CS_initFLLSettle(
                 CS_SMCLK_DESIRED_FREQUENCY_IN_KHZ,
                 487
     );
+
 
     if (error == STATUS_FAIL)
     {
@@ -600,13 +602,17 @@ tretcode end_state(tevent evt)
     return tr_ok; // Never reached.
 }
 
+static tevent evt;
+
 void main(void)
 {
     volatile int error;
     tstate cur_state = ENTRY_STATE;
     tretcode rc;
     tretcode (* state_fun)(tevent);
-    tevent evt;
+
+
+
 
     while (1) {
         // Process events
@@ -634,7 +640,7 @@ void main(void)
         rc = state_fun(evt);
         if (rc == tr_wait)
         {
-            // Sleep whilst waiting for an event
+            // Sleep whilst waiting for an eventconf
             __bis_SR_register(LPM3_bits + GIE);
         }
         cur_state = lookup_transitions(cur_state, rc);

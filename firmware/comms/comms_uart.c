@@ -315,7 +315,7 @@ t_ustat uart_run(int nPRG)
     rc = state_fun(evt);
     cur_state = lookup_transitions(cur_state, rc);
 
-    if (rc == rc_wait)
+    if ((rc == rc_wait) && nPRG)
     {
         status = ustat_waiting;
     }
