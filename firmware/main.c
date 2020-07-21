@@ -6,6 +6,7 @@
 #include "nt3h.h"
 #include "stat.h"
 #include "defs.h"
+#include "eep.h"
 #include <stdlib.h>
 
 
@@ -16,18 +17,62 @@
 
 #define CP10MS                                  41      /*!< ACLK Cycles Per 10 MilliSeconds. Assumes ACLK = 32768 kHz and a divide-by-8. */
 
-#define EXIT_STATE sc_error                             /*!< State machine exit state. */
+#define EXIT_STATE sc_end                               /*!< State machine exit state. */
 #define ENTRY_STATE sc_init                             /*!< State machine entry state. */
 
 volatile int rtcFlag = 0;                               /*!< Flag set by the Real-Time-Clock Interrupt Service Route. */
 volatile int timerFlag = 0;                             /*!< Flag set by the Timer Interrupt Service Routine. */
 volatile int hdcFlag = 0;                               /*!< Flag set by the HDC2021 humidity sensor data-ready Interrupt Service Routine. */
 
+const char ndefmsg_progmode[] = {0x03, 0x3D, 0xD1, 0x01,
+                                 0x39, 0x54, 0x02, 0x65,
+                                 0x6E, 0x50, 0x72, 0x6F,
+                                 0x67, 0x72, 0x61, 0x6D,
+                                 0x6D, 0x69, 0x6E, 0x67,
+                                 0x20, 0x4D, 0x6F, 0x64,
+                                 0x65, 0x2E, 0x20, 0x43,
+                                 0x6F, 0x6E, 0x6E, 0x65,
+                                 0x63, 0x74, 0x20, 0x74,
+                                 0x6F, 0x20, 0x73, 0x65,
+                                 0x72, 0x69, 0x61, 0x6C,
+                                 0x20, 0x70, 0x6F, 0x72,
+                                 0x74, 0x20, 0x61, 0x74,
+                                 0x20, 0x39, 0x36, 0x30,
+                                 0x30, 0x20, 0x62, 0x61,
+                                 0x75, 0x64, 0x2E, 0xFE};
+
+const char ndefmsg_noconfig[] = {0x03, 0x2D, 0xD1, 0x01,
+                                 0x29, 0x54, 0x02, 0x65,
+                                 0x6E, 0x43, 0x6F, 0x6E,
+                                 0x66, 0x69, 0x67, 0x20,
+                                 0x63, 0x68, 0x65, 0x63,
+                                 0x6B, 0x20, 0x66, 0x61,
+                                 0x69, 0x6C, 0x65, 0x64,
+                                 0x2E, 0x20, 0x53, 0x65,
+                                 0x65, 0x20, 0x63, 0x75,
+                                 0x70, 0x6C, 0x54, 0x61,
+                                 0x67, 0x20, 0x64, 0x6F,
+                                 0x63, 0x73, 0x2E, 0xFE};
+
+const char ndefmsg_badtrns[] =  {0x03, 0x27, 0xD1, 0x01,
+                                 0x23, 0x54, 0x02, 0x65,
+                                 0x6E, 0x45, 0x72, 0x72,
+                                 0x6F, 0x72, 0x3A, 0x20,
+                                 0x49, 0x6E, 0x76, 0x61,
+                                 0x6C, 0x69, 0x64, 0x20,
+                                 0x73, 0x74, 0x61, 0x74,
+                                 0x65, 0x20, 0x74, 0x72,
+                                 0x61, 0x6E, 0x73, 0x69,
+                                 0x74, 0x69, 0x6F, 0x6E,
+                                 0x2E, 0xFE};
+
+
 typedef enum state_codes {
     sc_init,
     sc_init_reqmemon,
     sc_init_waitmemon,
     sc_init_ntag,
+    sc_init_progmode,
     sc_init_configcheck,
     sc_init_errorcheck,
     sc_init_rtc,
@@ -38,12 +83,15 @@ typedef enum state_codes {
     sc_smpl_wait,
     sc_rtc_reqmemon,
     sc_rtc_waitmemon,
-    sc_end,
-    sc_error 
+    sc_err_reqmemon,
+    sc_err_waitmemon,
+    sc_err_msg,
+    sc_end
 } tstate;
 
 typedef enum ret_codes { 
-    tr_ok, 
+    tr_ok,
+    tr_prog,
     tr_hdcreq,
     tr_updatemin,
     tr_fail,
@@ -63,6 +111,7 @@ tretcode init_state(tevent);
 tretcode init_reqmemon(tevent);
 tretcode init_waitmemon(tevent);
 tretcode init_ntag(tevent);
+tretcode init_progmode(tevent);
 tretcode init_configcheck(tevent);
 tretcode init_errorcheck(tevent);
 tretcode init_rtc(tevent);
@@ -73,8 +122,10 @@ tretcode smpl_hdcread(tevent);
 tretcode smpl_wait(tevent);
 tretcode rtc_reqmemon(tevent);
 tretcode rtc_waitmemon(tevent);
+tretcode err_reqmemon(tevent);
+tretcode err_waitmemon(tevent);
+tretcode err_msg(tevent);
 tretcode end_state(tevent);
-tretcode error_state(tevent);
 
 /* array and enum below must be in sync! */
 tretcode (* state_fcns[])(tevent) = {
@@ -82,6 +133,7 @@ tretcode (* state_fcns[])(tevent) = {
                           init_reqmemon,
                           init_waitmemon,
                           init_ntag,
+                          init_progmode,
                           init_configcheck,
                           init_errorcheck,
                           init_rtc,
@@ -92,8 +144,10 @@ tretcode (* state_fcns[])(tevent) = {
                           smpl_wait,
                           rtc_reqmemon,
                           rtc_waitmemon,
-                          end_state,
-                          error_state
+                          err_reqmemon,
+                          err_waitmemon,
+                          err_msg,
+                          end_state
 };
 
 
@@ -112,13 +166,17 @@ struct transition state_transitions[] = {
                                          {sc_init_waitmemon, tr_wait,    sc_init_waitmemon},
 
                                          {sc_init_ntag,      tr_ok,      sc_init_configcheck},
+                                         {sc_init_ntag,      tr_prog,    sc_init_progmode},
 
-                                         {sc_init_configcheck,  tr_ok,      sc_init_errorcheck},
-                                         {sc_init_configcheck,  tr_fail,    sc_init_configcheck},
-                                         {sc_init_configcheck,  tr_wait,    sc_init_configcheck},
+                                         {sc_init_progmode,  tr_ok,      sc_init_progmode},
+                                         {sc_init_progmode,  tr_wait,    sc_init_progmode},
+                                         {sc_init_progmode,  tr_fail,    sc_err_reqmemon},
+
+                                         {sc_init_configcheck,  tr_ok,   sc_init_errorcheck},
+                                         {sc_init_configcheck,         tr_fail, sc_end},
 
                                          {sc_init_errorcheck,  tr_ok,      sc_init_rtc},
-                                         {sc_init_errorcheck,  tr_fail,      sc_end},
+                                         {sc_init_errorcheck,  tr_fail,    sc_end},
 
                                          {sc_init_rtc,      tr_ok,      sc_smpl_checkcounter},
 
@@ -128,7 +186,6 @@ struct transition state_transitions[] = {
                                          {sc_smpl_hdcwait,  tr_wait,    sc_smpl_hdcwait},
 
                                          {sc_smpl_hdcread,  tr_ok,      sc_smpl_wait},
-                                         {sc_smpl_hdcread,  tr_fail,    sc_error},
 
                                          {sc_smpl_wait,     tr_timeout,     sc_rtc_reqmemon},
                                          {sc_smpl_wait,     tr_wait,        sc_smpl_wait},
@@ -139,14 +196,22 @@ struct transition state_transitions[] = {
                                          {sc_smpl_checkcounter, tr_updatemin,   sc_smpl_wait},
 
                                          {sc_rtc_waitmemon, tr_ok, sc_smpl_checkcounter},
-                                         {sc_rtc_waitmemon, tr_wait,   sc_rtc_waitmemon}
+                                         {sc_rtc_waitmemon, tr_wait,   sc_rtc_waitmemon},
+
+                                         {sc_err_reqmemon,  tr_ok,     sc_err_waitmemon},
+
+                                         {sc_err_waitmemon, tr_ok,      sc_err_msg},
+                                         {sc_err_waitmemon, tr_wait,    sc_err_waitmemon},
+
+                                         {sc_err_msg,  tr_ok,     sc_end},
+
                                          
 };
 
 /* Look up transitions from the table for a current state and given return code. */
 tstate lookup_transitions(tstate curstate, tretcode rc)
 {
-    tstate nextstate = sc_error;
+    tstate nextstate = sc_err_reqmemon; /* This should never be reached. */
     int i=0;
 
     for (i=0; i<sizeof(state_transitions)/sizeof(state_transitions[0]); i++)
@@ -158,12 +223,18 @@ tstate lookup_transitions(tstate curstate, tretcode rc)
         }
     }
 
-    if (nextstate == sc_error)
-    {
-        while(1);
-    }
-
     return nextstate;
+}
+
+static void writetxt(char * msgptr, char len) {
+    int eepindex = 0;
+    int blk;
+
+    eep_cp(&eepindex, msgptr, len);
+    for (blk=0; blk<4; blk++) {
+        eep_write(blk, blk);
+    }
+    eep_waitwritedone();
 }
 
 static void wdog_kick()
@@ -195,28 +266,6 @@ static void start_timer(unsigned int intervalCycles)
         Timer_B_startCounter(TB1_BASE, TIMER_B_CONTINUOUS_MODE);
 }
 
-static void memon()
-{
-    // P4.3 HDC_INT as input
-    GPIO_setAsInputPin(
-            GPIO_PORT_P4,
-            GPIO_PIN3
-    );
-
-    // P4.2 EN as output high
-    GPIO_setAsOutputPin(
-            GPIO_PORT_P4,
-            GPIO_PIN2
-    );
-
-    GPIO_setOutputHighOnPin(
-            GPIO_PORT_P4,
-            GPIO_PIN2
-    );
-
-
-    start_timer(2*CP10MS);
-}
 
 static void memoff()
 {
@@ -337,7 +386,25 @@ tretcode init_state(tevent evt)
 static tretcode reqmemon(tevent evt)
 {
     /* Power up the I2C bus. */
-    memon();
+    // P4.3 HDC_INT as input
+    GPIO_setAsInputPin(
+            GPIO_PORT_P4,
+            GPIO_PIN3
+    );
+
+    // P4.2 EN as output high
+    GPIO_setAsOutputPin(
+            GPIO_PORT_P4,
+            GPIO_PIN2
+    );
+
+    GPIO_setOutputHighOnPin(
+            GPIO_PORT_P4,
+            GPIO_PIN2
+    );
+
+
+    start_timer(2*CP10MS);
 
     return tr_ok;
 }
@@ -369,6 +436,9 @@ tretcode init_waitmemon(tevent evt)
 
 tretcode init_ntag(tevent evt)
 {
+    tretcode rc;
+    int nPRG;
+
     // Checks for an NFC text record.
     if (confignfc_check())
     {
@@ -379,37 +449,63 @@ tretcode init_ntag(tevent evt)
     /* Initialise the NTAG. */
     nt3h_init();
 
-
     /* Read the whoami registers of both the NT3H and the HDC2010. */
-    return tr_ok;
+
+    /* Check nPRG. */
+    nPRG = GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN5);
+
+    if (nPRG) {
+        rc = tr_ok;
+    } else {
+        // Write programming mode NDEF text.
+        writetxt(ndefmsg_progmode, sizeof(ndefmsg_progmode));
+        rc = tr_prog;
+    }
+
+    return rc;
 }
 
-tretcode init_configcheck(tevent evt)
+tretcode init_progmode(tevent evt)
 {
     tretcode rc;
-    int nPRG;
     t_ustat uartstatus;
 
     // Kick the watchdog.
     wdog_kick();
 
-    // Read the nPRG pin
-    nPRG = GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN5);
+    uartstatus = uart_run();
 
-    uartstatus = uart_run(nPRG);
-
-    // Continue if serial present and nPRG de-asserted.
-    if (uartstatus == ustat_running)
-    {
-        rc = tr_fail;
-    }
-    else if (uartstatus == ustat_waiting)
+    if (uartstatus == ustat_waiting)
     {
         rc = tr_wait;
+    }
+    else if (uartstatus == ustat_finished)
+    {
+        /* The UART state machine should never finish. It should run until reset.
+           If this is reached then an invalid state transition has been requested.
+           In response the tag will output an error message and go into LPM4 (deep sleep). */
+        rc = tr_fail;
     }
     else
     {
         rc = tr_ok;
+    }
+
+    return rc;
+}
+
+
+
+tretcode init_configcheck(tevent evt)
+{
+    tretcode rc = tr_fail;
+
+    if (nvparams_allwritten()) {
+        rc = tr_ok;
+    }
+    else {
+        // Write configuration failed NDEF text.
+        writetxt(ndefmsg_noconfig, sizeof(ndefmsg_noconfig));
     }
 
     return rc;
@@ -429,22 +525,26 @@ tretcode init_errorcheck(tevent evt)
     // Check for low battery here.
     status = stat_get(&err, resetsalltime);
 
-    // Safety feature to prevent wearing out the EEPROM after repeated resets.
-    if (resetsperloop < 50)
-    {
-        wdog_kick();
-        enc_init(status, err);
-    }
-
-    // Go to LPM4 in the event of an error.
     if (err == false)
     {
+        // Clear the resets counter if the reset has been caused intentionally (e.g. by the user replacing the battery).
+        // The resets counter should only count unintended resets (e.g. due to brown out or the watchdog).
+        // Without this behaviour, the Tag could get stuck in an error state.
         nvparams_cresetsperloop();
+    }
+
+    if (resetsperloop < 10)
+    {
+        // Fewer than 10 consecutive unintended resets due to an error. Try to keep going.
+        wdog_kick();
+        enc_init(status, false);
         rc = tr_ok;
     }
     else
     {
-        rc = tr_fail;
+        // More than 10 consecutive unintended resets before reaching the end of the circular buffer. Stop.
+        enc_init(status, true); // Do not write the full URL.
+        rc = tr_fail; // Go to LPM4. This prevents wearing out the EEPROM after repeated resets.
     }
 
     return rc;
@@ -464,19 +564,36 @@ tretcode init_rtc(tevent evt)
     return tr_ok;
 }
 
-tretcode error_state(tevent evt)
+tretcode err_reqmemon(tevent evt)
 {
-    return tr_wait;
+    /* An invalid state machine transition has been requested
+     * i.e. one that is not in the table. You should never reach here.
+     * If you do, a text message is written to the  */
+    /* Power up the I2C bus if it is not already on. */
+    return reqmemon(evt);
+}
+
+tretcode err_waitmemon(tevent evt)
+{
+    return waitmemon(evt);
+}
+
+tretcode err_msg(tevent evt)
+{
+    // Write configuration failed NDEF text.
+    writetxt(ndefmsg_badtrns, sizeof(ndefmsg_badtrns));
+    return tr_ok;
 }
 
 tretcode smpl_hdcreq(tevent evt)
 {
     /* Enable HDCint P4.2 rising edge interrupt. */
     P4IFG &= ~BIT3; // Clear flag.
-    P4IES |= BIT3 ; // Falling edge detect.
-    P4IE |= BIT3 ; // Allow interrupt.
+    P4IES |= BIT3; // Falling edge detect.
 
     hdc2010_startconv();
+
+    P4IE |= BIT3;  // Allow interrupt.
 
     return tr_ok;
 }
@@ -500,7 +617,7 @@ tretcode smpl_hdcread(tevent evt)
     /* Disable HDCint P4.3 rising edge interrupt. */
     P4IE &= ~BIT3 ; // Disable interrupt on port 2 bit 3.
 
-    // If event shows HDC interrupt read the temperature, otherwise tr_wait.
+    // Read temperature and humidity from the sensor.
     hdc2010_read_temp(&temp, &rh);
 
     if (enc_pushsample(temp, rh) > 0)
@@ -644,8 +761,6 @@ void main(void)
             __bis_SR_register(LPM3_bits + GIE);
         }
         cur_state = lookup_transitions(cur_state, rc);
-        if (EXIT_STATE == cur_state)
-            break;
 
     }
 

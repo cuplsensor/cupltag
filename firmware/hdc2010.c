@@ -51,13 +51,15 @@ int hdc2010_startconv()
     int err = 0;
     int measconf = 0;
 
-    // Enable interrupt pin, active high.
+    // Enable interrupt pin, active low.
     i2c_write8(DEVADDR, RSTDRDYINTCONF_REGADDR, DRDY_INTEN_BIT);
     // Enable DRDY interrupt
     i2c_write8(DEVADDR, INTEN_REGADDR, INTEN_DRDYEN_BIT);
+    // Clear any existing interrupt by reading the status register.
+    i2c_read8(DEVADDR, INT_REGADDR);
 
+    // Trigger a measurement.
     measconf |= MEAS_TRIG_BIT;
-
     i2c_write8(DEVADDR, MEASCONF_REGADDR, measconf);
 
     return err;

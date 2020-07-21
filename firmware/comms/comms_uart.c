@@ -23,19 +23,16 @@ typedef enum uart_event_codes {
     evt_none,
     evt_rxdone,
     evt_txdone,
-    evt_progmode
 } t_uevent;
 
 typedef enum uart_state_codes {
     uartsc_init,
     uartsc_txboot,
-    uartsc_checkparams,
     uartsc_prepRx,
     uartsc_waitforRx,
     uartsc_pcktrxed,
     uartsc_prepTx,
     uartsc_waitforTx,
-    uartsc_shutdown,
     uartsc_error
 } t_ustate;
 
@@ -47,29 +44,25 @@ struct utransition {
 
 t_uretcode uart_init(t_uevent evt);
 t_uretcode uart_txboot(t_uevent evt);
-t_uretcode uart_checkparams(t_uevent evt);
 t_uretcode uart_prepRx(t_uevent evt);
 t_uretcode uart_waitforRx(t_uevent evt);
 t_uretcode uart_pcktrxed(t_uevent evt);
 t_uretcode uart_prepTx(t_uevent evt);
 t_uretcode uart_waitforTx(t_uevent evt);
-t_uretcode uart_shutdown(t_uevent evt);
 t_uretcode uart_error(t_uevent evt);
 
-#define EXIT_STATE uartsc_shutdown
+#define EXIT_STATE uartsc_error
 #define ENTRY_STATE uartsc_init
 
 /* array and enum below must be in sync! */
 static t_uretcode (* ustate_fcns[])(t_uevent) = {
                           uart_init,
                           uart_txboot,
-                          uart_checkparams,
                           uart_prepRx,
                           uart_waitforRx,
                           uart_pcktrxed,
                           uart_prepTx,
                           uart_waitforTx,
-                          uart_shutdown,
                           uart_error
 };
 
@@ -77,9 +70,6 @@ struct utransition ustate_transitions[] = {
                                           {uartsc_init,  rc_ok,  uartsc_txboot},
 
                                           {uartsc_txboot,  rc_ok,  uartsc_prepTx},
-
-                                          {uartsc_checkparams, rc_ok, uartsc_shutdown},
-                                          {uartsc_checkparams, rc_fail, uartsc_prepRx},
 
                                           {uartsc_prepRx,  rc_ok,  uartsc_waitforRx},
 
@@ -91,10 +81,8 @@ struct utransition ustate_transitions[] = {
 
                                           {uartsc_prepTx,  rc_ok,  uartsc_waitforTx},
 
-                                          {uartsc_waitforTx,  rc_ok,  uartsc_checkparams},
-                                          {uartsc_waitforTx,  rc_wait,  uartsc_waitforTx},
-
-                                          {uartsc_shutdown,  rc_ok,  uartsc_shutdown},
+                                          {uartsc_waitforTx,  rc_ok,  uartsc_prepRx},
+                                          {uartsc_waitforTx,  rc_wait,  uartsc_waitforTx}
 };
 
 
@@ -118,11 +106,6 @@ static t_ustate lookup_transitions(t_ustate curstate, t_uretcode rc)
         {
             nextstate = ustate_transitions[i].dst_state;
         }
-    }
-
-    if (nextstate == uartsc_error)
-    {
-        while(1);
     }
 
     return nextstate;
@@ -161,18 +144,6 @@ t_uretcode uart_txboot(t_uevent evt)
     t_uretcode rc = rc_ok;
 
     strncpy(uartBuffer, "<boot>", sizeof(uartBuffer));
-
-    return rc;
-}
-
-t_uretcode uart_checkparams(t_uevent evt)
-{
-    t_uretcode rc = rc_fail;
-
-    if (nvparams_allwritten() && (evt != evt_progmode))
-    {
-        rc = rc_ok;
-    }
 
     return rc;
 }
@@ -270,18 +241,6 @@ t_uretcode uart_waitforTx(t_uevent evt)
     return rc;
 }
 
-t_uretcode uart_shutdown(t_uevent evt)
-{
-    t_uretcode rc = rc_ok;
-
-    // Set the USCI state machine to reset.
-    UCA0IE &= ~UCTXIE;
-    UCA0IE &= ~UCRXIE;
-    UCA0CTL1 = UCSWRST;
-
-    return rc;
-}
-
 t_uretcode uart_error(t_uevent evt)
 {
     t_uretcode rc = rc_ok;
@@ -289,7 +248,7 @@ t_uretcode uart_error(t_uevent evt)
     return rc;
 }
 
-t_ustat uart_run(int nPRG)
+t_ustat uart_run()
 {
     t_ustat status = ustat_running;
     t_uevent evt = evt_none;
@@ -306,16 +265,12 @@ t_ustat uart_run(int nPRG)
         txDoneFlag = 0;
         evt = evt_txdone;
     }
-    else if (!nPRG)
-    {
-        evt = evt_progmode;
-    }
 
     state_fun = ustate_fcns[cur_state];
     rc = state_fun(evt);
     cur_state = lookup_transitions(cur_state, rc);
 
-    if ((rc == rc_wait) && nPRG)
+    if (rc == rc_wait)
     {
         status = ustat_waiting;
     }
