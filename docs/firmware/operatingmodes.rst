@@ -49,9 +49,94 @@ At the Sample Interval (in minutes)
 #. cuplTag returns to LPM3.
 
 
-
 Configuration file check
 Block 1 of the NT3H2211 is read via I2C. If it contains a text record, then it is assumed
 that a configuration file has been written. cuplTag resets to read the configuration file.
+
+
+Secondary
+~~~~~~~~~~~
+
+The secondary operating mode is programming mode. The state :cpp:func:`init_progmode` is entered when the nPRG pin
+is low after reset. A reset is triggered at power on or by a low pulse on the nRESET pin (see :ref:`HT04Pinout`).
+The only way to leave programming mode is to trigger a reset. This is done either via the aforementioned means
+or by sending the soft-reset command.
+
+The serial port is active in this state and not in any other to save power. Connect with these settings:
+
++--------------+------+
+| Baudrate     | 9600 |
++--------------+------+
+| Parity       | None |
++--------------+------+
+| Stop bit     | 1    |
++--------------+------+
+| Flow control | Off  |
++--------------+------+
+
+A simple command and response scheme is used. Basic commands have 3 characters:
+
++-----------+-----------------+---------------------------------------------+
+| Character | Description     | Note                                        |
++-----------+-----------------+---------------------------------------------+
+|     <     | Start character |                                             |
++-----------+-----------------+---------------------------------------------+
+|     z     | Command ID      | Any character in the range a-z, A-Z and 0-9 |
++-----------+-----------------+---------------------------------------------+
+|     >     | End character   |                                             |
++-----------+-----------------+---------------------------------------------+
+
+Configuration string commands add a parameter string:
+
++-----------+------------------+----------------------------------------+
+| Character | Description      | Note                                   |
++-----------+------------------+----------------------------------------+
+|     <     | Start character  |                                        |
++-----------+------------------+----------------------------------------+
+|     b     | Command ID       | Any character in [a-z, A-Z, 0-9]       |
++-----------+------------------+----------------------------------------+
+|     :     | Parameter prefix |                                        |
++-----------+------------------+----------------------------------------+
+| ABcd1234  | Parameter string | Up to 64 characters in [a-z, A-Z, 0-9] |
++-----------+------------------+----------------------------------------+
+|     >     | End character    |                                        |
++-----------+------------------+----------------------------------------+
+
+Responses take a similar format to commands, starting with a '<' character and ending with a '>'.
+
+A human-readable ASCII format was chosen because very little data is transacted.
+It is useful to be able to send and receive commands through the terminal window without having to encode
+and decode packets.
+
+Basic Commands
+***************
+
++---------+-----------+------------------------+--------------+---------------------------------------+
+| Command | Name      | Response               | Example      | Description                           |
++---------+-----------+------------------------+--------------+---------------------------------------+
+| <x>     | Version   | <HWVER_FWVER_CODECVER> | <HT04_F2_C1> | Hardware, firmware and codec versions |
++---------+-----------+------------------------+--------------+---------------------------------------+
+| <y>     | EnterBL   | None                   |              | Enter the MSP430 UART bootloader      |
++---------+-----------+------------------------+--------------+---------------------------------------+
+| <z>     | SoftReset | None                   |              | Reset the MSP430                      |
++---------+-----------+------------------------+--------------+---------------------------------------+
+
+Error Response
+****************
+
+The cuplTag firmware responds with '<e>' if it has failed to parse a command.
+
+Configuration Commands
+***********************
+
+See configuration strings.
+
+
+The :ref:`StateChart` shows a theoretical transition into an error state. This can only occur if the UART
+state table is incomplete.
+
+
+
+
 
 .. _MSP430Datasheet: https://www.ti.com/document-viewer/MSP430FR2155/datasheet/operating-modes-slasec45810#SLASEC45810

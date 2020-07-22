@@ -1,6 +1,8 @@
 HT04 Module
 -------------
 
+.. _HT04Pinout:
+
 Pinout
 *******
 
