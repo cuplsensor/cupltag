@@ -7,7 +7,6 @@ cupl Tag Documention
    :caption: Firmware
 
    docs/firmware/index
-   docs/hardware/index
 
 .. toctree::
    :maxdepth: 3
