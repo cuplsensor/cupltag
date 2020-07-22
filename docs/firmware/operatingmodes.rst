@@ -24,9 +24,9 @@ Every Minute
 #. The minute counter is increased by 1.
 #. The VMEM domain is powered on in order to communicate with the NT3H2211 via I2C.
 #. Block 1 of the NT3H2211 is read via I2C. If it contains a text record, then it is assumed
-that a configuration file has been written. cuplTag resets to read the configuration file.
+   that a configuration file has been written. cuplTag resets to read the configuration file.
 #. A call is made to enc_setelapsed in cuplCodec. The minuteselapsed field (CODEC_FEAT_26) of the cuplCodec URL
-is updated.
+   is updated.
 #. The VMEM domain is powered down.
 #. cuplTag returns to LPM3.
 
