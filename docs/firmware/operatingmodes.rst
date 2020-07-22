@@ -24,7 +24,7 @@ Every Minute
 #. Minute counter is incremented.
 #. The VMEM domain is powered on.
 #. A configuration file check is made. A reset occurs if one is found.
-#. A call is made to enc_setelapsed in cuplCodec. The minuteselapsed field (CODEC_FEAT_26) of the cuplCodec URL
+#. A call is made to cpp:func:`enc_setelapsed` in cuplCodec. The minuteselapsed field (CODEC_FEAT_26) of the cuplCodec URL
    is updated.
 #. The VMEM domain is powered off.
 #. cuplTag returns to LPM3.
@@ -34,13 +34,13 @@ At the Sample Interval (in minutes)
 **************************************
 
 #. cuplTag wakes up from standby (LPM3).
-#. The minute counter is reset to 0.
+#. Minute counter is reset to 0.
 #. The VMEM domain is powered on.
 #. A configuration file check is made. A reset occurs if one is found.
 #. A sample is requested from the humidity sensor.
 #. The MSP430 waits in LPM3 until the DRDY line of this sensor is asserted.
 #. The sample is read from the humidity sensor.
-#. A call is made to enc_pushsample in cuplCodec. The sample is written to the circular
+#. A call is made to :cpp:func:`enc_pushsample` in cuplCodec. The sample is written to the circular
    buffer inside the cuplCodec URL. The minuteselapsed field is reset to 0.
 #. If the circular buffer has wrapped around to the start, then a call is made to :cpp:func:`nvparams_cresetsperloop`.
 #. The VMEM domain is powered off.
