@@ -5,5 +5,6 @@
 
    gettingstarted
    statechart
+   operatingmodes
    reference/index
    
