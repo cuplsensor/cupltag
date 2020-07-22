@@ -5,6 +5,8 @@
 
    gettingstarted
    statechart
+   startup
    operatingmodes
+   errorconditions
+   configuration
    reference/index
-   

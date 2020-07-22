@@ -1,6 +1,8 @@
 Operating Modes
 -----------------
 
+.. _NormalMode:
+
 Primary
 ~~~~~~~~
 
@@ -53,6 +55,7 @@ Configuration file check
 Block 1 of the NT3H2211 is read via I2C. If it contains a text record, then it is assumed
 that a configuration file has been written. cuplTag resets to read the configuration file.
 
+.. _ProgMode:
 
 Secondary
 ~~~~~~~~~~~
