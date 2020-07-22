@@ -9,19 +9,22 @@ State Chart
     hide empty description
     [*] --> init_state
 
-    init_state --> init_reqsyson: tr_ok
+    init_state --> init_reqmemon: tr_ok
 
-    init_reqsyson --> init_waitsyson: tr_ok
+    init_reqmemon --> init_waitmemon: tr_ok
 
-    init_waitsyson --> init_ntag_and_fd: tr_ok
-    init_waitsyson --> init_waitsyson: tr_wait
+    init_waitmemon --> init_ntag: tr_ok
+    init_waitmemon --> init_waitmemon: tr_wait
 
-    init_ntag_and_fd --> init_nfccheck: tr_ok
+    init_ntag --> init_configcheck: tr_ok
+    init_ntag --> init_progmode: tr_prog
 
-    init_nfccheck --> init_serialcheck: tr_ok
+    init_progmode --> init_progmode: tr_ok
+    init_progmode --> init_progmode: tr_wait
+    init_progmode --> err_reqmemon: tr_fail
 
-    init_serialcheck --> init_errorcheck: tr_ok
-    init_serialcheck --> init_serialcheck: tr_fail
+    init_configcheck --> init_errorcheck: tr_ok
+    init_configcheck --> [*]: tr_fail
 
     init_errorcheck --> init_rtc: tr_ok
     init_errorcheck --> [*]: tr_fail
@@ -37,15 +40,20 @@ State Chart
     smpl_hdcwait --> smpl_hdcwait: tr_wait
 
     smpl_hdcread --> smpl_wait: tr_ok
-    smpl_hdcread --> [*]: tr_fail
 
-
-    smpl_wait --> rtc_reqsyson: tr_ok
+    smpl_wait --> rtc_reqmemon: tr_timeout
     smpl_wait --> smpl_wait: tr_wait
 
-    rtc_reqsyson -->  rtc_waitsyson: tr_ok
+    rtc_reqmemon -->  rtc_waitmemon: tr_ok
 
-    rtc_waitsyson --> smpl_checkcounter: tr_ok
-    rtc_waitsyson --> rtc_waitsyson: tr_wait
+    rtc_waitmemon --> smpl_checkcounter: tr_ok
+    rtc_waitmemon --> rtc_waitmemon: tr_wait
+
+    err_reqmemon --> err_waitmemon: tr_ok
+
+    err_waitmemon --> err_msg: tr_ok
+    err_waitmemon --> err_waitmemon: tr_wait
+
+    err_msg --> [*]: tr_ok
 
     @enduml
