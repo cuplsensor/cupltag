@@ -41,7 +41,7 @@ At the Sample Interval (in minutes)
 #. The MSP430 waits in LPM3 until the DRDY line of this sensor is asserted.
 #. The sample is read from the humidity sensor.
 #. A call is made to enc_pushsample in cuplCodec. The sample is written to the circular
-buffer inside the cuplCodec URL. The minuteselapsed field is reset to 0.
+   buffer inside the cuplCodec URL. The minuteselapsed field is reset to 0.
 #. If the circular buffer has wrapped around to the start, then a call is made to :cpp:func:`nvparams_cresetsperloop`.
 #. The VMEM domain is powered off.
 #. cuplTag returns to LPM3.
@@ -51,4 +51,5 @@ buffer inside the cuplCodec URL. The minuteselapsed field is reset to 0.
 Configuration file check
 Block 1 of the NT3H2211 is read via I2C. If it contains a text record, then it is assumed
 that a configuration file has been written. cuplTag resets to read the configuration file.
+
 .. _MSP430Datasheet: https://www.ti.com/document-viewer/MSP430FR2155/datasheet/operating-modes-slasec45810#SLASEC45810
