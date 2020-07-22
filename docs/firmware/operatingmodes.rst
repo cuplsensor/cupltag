@@ -24,7 +24,7 @@ Every Minute
 #. Minute counter is incremented.
 #. The VMEM domain is powered on.
 #. A configuration file check is made. A reset occurs if one is found.
-#. A call is made to cpp:func:`enc_setelapsed` in cuplCodec. The minuteselapsed field (CODEC_FEAT_26) of the cuplCodec URL
+#. A call is made to :cpp:func:`enc_setelapsed` in cuplCodec. The minuteselapsed field (CODEC_FEAT_26) of the cuplCodec URL
    is updated.
 #. The VMEM domain is powered off.
 #. cuplTag returns to LPM3.
