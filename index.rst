@@ -13,7 +13,7 @@ cupl Tag Documention
    :maxdepth: 3
    :caption: Hardware
    
-   docs/hardware
+   docs/hardware/index
 
 Indices and tables
 ==================
