@@ -2,6 +2,5 @@ HT04 Module
 -------------
 
 .. image:: HT04_pinout.svg
-  :width: 700
-  :alt: Alternative text
+  :alt: Diagram showing pinout of the HT04 module.
 
