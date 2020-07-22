@@ -23,7 +23,7 @@ Every Minute
 #. cuplTag wakes up from standby (LPM3).
 #. Minute counter is incremented.
 #. The VMEM domain is powered on.
-#. A call is made to :cpp:func`confignfc_check`. This checks if an NDEF text record
+#. A call is made to :cpp:func:`confignfc_check`. This checks if an NDEF text record
    (assumed to contain configuration data) is present on the tag. If so, a reset occurs.
 #. A call is made to :cpp:func:`enc_setelapsed` in cuplCodec. The minuteselapsed field (CODEC_FEAT_26) of the cuplCodec URL
    is updated.
@@ -37,7 +37,7 @@ At the Sample Interval (in minutes)
 #. cuplTag wakes up from standby (LPM3).
 #. Minute counter is reset to 0.
 #. The VMEM domain is powered on.
-#. A call is made to :cpp:func`confignfc_check`. This checks if an NDEF text record
+#. A call is made to :cpp:func:`confignfc_check`. This checks if an NDEF text record
    (assumed to contain configuration data) is present on the tag. If so, a reset occurs.
 #. A sample is requested from the humidity sensor with :cpp:func:`hdc2010_startconv`.
 #. The MSP430 waits in LPM3 until the DRDY line of this sensor is asserted.
