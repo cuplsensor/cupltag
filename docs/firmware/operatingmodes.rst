@@ -5,6 +5,7 @@ Primary
 ~~~~~~~~
 
 The software progresses into the loop at the bottom of the :ref:`StateChart`:
+
 * Programming mode is not entered because the nPRG pin is deasserted.
 * Tag configuration is present according to :cpp:func:`init_configcheck`.
 * No evidence of repeated resets has been found by :cpp:func:`init_errorcheck`.
