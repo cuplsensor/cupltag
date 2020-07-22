@@ -4,8 +4,8 @@ State Chart
 ~~~~~~~~~~~~~
 
 .. uml::
-   :caption: Caption with **bold** and *italic*
-   :width: 50mm
+   :caption: The state machine in :any:`main`.
+   :width: 100%
 
     @startuml
     hide empty description
