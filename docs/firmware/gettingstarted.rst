@@ -36,12 +36,12 @@ Open the Code Composer Project
     .. image:: ccsopen.png
        :width: 400
 
-Add Reference to cupl Codec
+Add Reference to cuplCodec
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The cupl Tag firmware depends on C files from cupl Codec.
+The cuplTag firmware depends on C files from cuplCodec.
 
-#. Fork the cupl Codec repository on (`GitHub <https://github.com/cuplsensor/cuplcodec>`_).
+#. Fork the cuplCodec repository on (`GitHub <https://github.com/cuplsensor/cuplcodec>`_).
 #. Clone this into a folder on your computer.
 #. In CCS, right click the cuplTag_firmware project.
 #. Select Properties from the context menu.

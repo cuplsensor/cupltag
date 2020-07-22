@@ -1,3 +1,5 @@
+.. _StateChart:
+
 State Chart
 ~~~~~~~~~~~~~
 

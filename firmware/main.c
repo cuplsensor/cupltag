@@ -180,6 +180,9 @@ struct transition state_transitions[] = {
 
                                          {sc_init_rtc,      tr_ok,      sc_smpl_checkcounter},
 
+                                         {sc_smpl_checkcounter, tr_hdcreq,      sc_smpl_hdcreq},
+                                         {sc_smpl_checkcounter, tr_updatemin,   sc_smpl_wait},
+
                                          {sc_smpl_hdcreq,   tr_ok,      sc_smpl_hdcwait},
 
                                          {sc_smpl_hdcwait,  tr_ok,      sc_smpl_hdcread},
@@ -192,8 +195,7 @@ struct transition state_transitions[] = {
 
                                          {sc_rtc_reqmemon,  tr_ok,      sc_rtc_waitmemon},
 
-                                         {sc_smpl_checkcounter, tr_hdcreq,      sc_smpl_hdcreq},
-                                         {sc_smpl_checkcounter, tr_updatemin,   sc_smpl_wait},
+
 
                                          {sc_rtc_waitmemon, tr_ok, sc_smpl_checkcounter},
                                          {sc_rtc_waitmemon, tr_wait,   sc_rtc_waitmemon},
