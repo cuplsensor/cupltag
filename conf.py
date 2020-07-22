@@ -58,7 +58,7 @@ breathe_projects = { "cupl Tag Firmware": "firmware/doxygen/xml/"} # BREATHE
 breathe_default_project = "cupl Tag Firmware" # BREATHE
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_doc_templates']
+templates_path = ['docs/_doc_templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
