@@ -37,7 +37,7 @@ Base URL
 | Parameter value  | Any string          |
 +------------------+---------------------+
 
-Example: <b:localhost:5000>
+Example: ``<b:localhost:5000>``
 
 Serial
 ********
@@ -50,7 +50,7 @@ Serial
 | Parameter value  | Any URL-safe Base64 |
 +------------------+---------------------+
 
-Example: <w:KEG2lARW>
+Example: ``<w:KEG2lARW>``
 
 Sample Interval in Minutes
 ****************************
@@ -67,7 +67,7 @@ HMAC Secret Key
 | Parameter value  | Any URL-safe Base64 |
 +------------------+---------------------+
 
-Example: <s:4EOBdBWTsjeFZTm3>
+Example: ``<s:4EOBdBWTsjeFZTm3>``
 
 Use HTTPS
 ***********
@@ -79,3 +79,19 @@ Use HTTPS
 +------------------+---------------------------------------+
 | Parameter value  | 0 (HTTPS disabled), 1 (HTTPS enabled) |
 +------------------+---------------------------------------+
+
+Example: ``<h:1>``
+
+
+Use HMAC
+************
+
++------------------+---------------------------------------+
+| Command ID       | i                                     |
++------------------+---------------------------------------+
+| Parameter Length | 1                                     |
++------------------+---------------------------------------+
+| Parameter value  | 0 (HMAC disabled), 1 (HMAC enabled)   |
++------------------+---------------------------------------+
+
+Example ``<i:1>``
