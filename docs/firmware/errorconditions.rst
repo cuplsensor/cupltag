@@ -60,7 +60,7 @@ This error may be encountered by a programmer but should never be seen by an end
 
 A function should never request a state transition that is not defined in the state table.
 
-If this does happen, a catch-all state is entered cpp:member:``err_reqmemon``.
+If this does happen, a catch-all state is entered cpp:func:``err_reqmemon``.
 The dynamic tag is powered up and an NDEF text record is written:
 ``Invalid state transition``.
 
