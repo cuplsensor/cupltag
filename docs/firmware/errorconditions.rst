@@ -51,4 +51,17 @@ that causes a reset. For example:
 #. The tag resets and start to write to the dynamic tag again. The reset reoccurs.
 
 If unchecked this cycle can go around many times each second. This will cause the dynamic tag to have worn out
-before the fault can be addressed. The cuplTag employs a "last ditch" protection feature to avoid this. 
+before the fault can be addressed. The cuplTag employs a "last ditch" protection feature to avoid this.
+
+Invalid State Transition
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This error may be encountered by a programmer but should never be seen by an end-user!
+
+A function should never request a state transition that is not defined in the state table.
+
+If this does happen, a catch-all state is entered cpp:member:``err_reqmemon``.
+The dynamic tag is powered up and an NDEF text record is written:
+``Invalid state transition``.
+
+cuplTag subsequently enters its end state and powers down to LPM4.
