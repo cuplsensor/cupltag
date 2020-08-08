@@ -16,6 +16,7 @@ char * nvparams_getsecretkey(void);
 unsigned int nvparams_getversion(void);
 unsigned int nvparams_getsmplintmins(void);
 long nvparams_getsleepintmins(void);
+unsigned int nvparams_getminvoltagemv(void);
 // Resets
 int nvparams_getresetsperloop(void);
 int nvparams_getresetsalltime(void);

@@ -6,12 +6,21 @@
  */
 
 #include "comms_uart.h"
+#include "defs.h"
 #include <msp430.h>
 #include <stdbool.h>
 #include "stdint.h"
 #include <string.h>
 
-static char __version__[] = "HT04_F1_C1";
+#define HW_VERSION    HT04
+#define FW_VERSION    1
+
+#define    XSTR(V)        #V
+#define    STR(V)        XSTR(V)
+
+#define    VERSION        STR(HW_VERSION) "_F" STR(FW_VERSION) "_C" STR(CODEC_VERSION)
+
+static char __version__[] = VERSION;
 
 typedef enum uart_ret_codes {
     rc_ok,

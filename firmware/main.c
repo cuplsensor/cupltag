@@ -7,6 +7,7 @@
 #include "stat.h"
 #include "defs.h"
 #include "eep.h"
+#include "batv.h"
 #include <stdlib.h>
 
 
@@ -189,13 +190,12 @@ struct transition state_transitions[] = {
                                          {sc_smpl_hdcwait,  tr_wait,    sc_smpl_hdcwait},
 
                                          {sc_smpl_hdcread,  tr_ok,      sc_smpl_wait},
+                                         {sc_smpl_hdcread,  tr_fail,    sc_end},
 
                                          {sc_smpl_wait,     tr_timeout,     sc_rtc_reqmemon},
                                          {sc_smpl_wait,     tr_wait,        sc_smpl_wait},
 
                                          {sc_rtc_reqmemon,  tr_ok,      sc_rtc_waitmemon},
-
-
 
                                          {sc_rtc_waitmemon, tr_ok, sc_smpl_checkcounter},
                                          {sc_rtc_waitmemon, tr_wait,   sc_rtc_waitmemon},
@@ -205,8 +205,7 @@ struct transition state_transitions[] = {
                                          {sc_err_waitmemon, tr_ok,      sc_err_msg},
                                          {sc_err_waitmemon, tr_wait,    sc_err_waitmemon},
 
-                                         {sc_err_msg,  tr_ok,     sc_end},
-
+                                         {sc_err_msg,  tr_ok,     sc_end}
                                          
 };
 
@@ -519,13 +518,16 @@ tretcode init_errorcheck(tevent evt)
     bool err = false;
     unsigned int status;
     int resetsalltime, resetsperloop;
+    unsigned int batv, batv_mv;
 
+    wdog_kick();
     nvparams_incrcounters(); // Increment reset counter.
     resetsalltime = nvparams_getresetsalltime();
     resetsperloop = nvparams_getresetsperloop();
 
-    // Check for low battery here.
     status = stat_get(&err, resetsalltime);
+    batv = batv_measure();
+    batv_mv = batv_to_mv(batv);
 
     if (err == false)
     {
@@ -533,21 +535,24 @@ tretcode init_errorcheck(tevent evt)
         // The resets counter should only count unintended resets (e.g. due to brown out or the watchdog).
         // Without this behaviour, the Tag could get stuck in an error state.
         nvparams_cresetsperloop();
+        resetsperloop = 0;
     }
 
-    if (resetsperloop < 10)
+    // Check for too many resets.
+    if (resetsperloop > 10)
     {
-        // Fewer than 10 consecutive unintended resets due to an error. Try to keep going.
-        wdog_kick();
-        enc_init(status, false);
-        rc = tr_ok;
+        // Go to LPM4. This prevents wearing out the EEPROM after repeated resets.
+        err = true; // More than 10 consecutive unintended resets before reaching the end of the circular buffer. Stop.
     }
-    else
+
+    // Check for low battery.
+    if (batv_mv < nvparams_getminvoltagemv())
     {
-        // More than 10 consecutive unintended resets before reaching the end of the circular buffer. Stop.
-        enc_init(status, true); // Do not write the full URL.
-        rc = tr_fail; // Go to LPM4. This prevents wearing out the EEPROM after repeated resets.
+        err = true;
     }
+
+    enc_init(status, err, batv);
+    rc = (err) ? tr_fail : tr_ok;
 
     return rc;
 }
@@ -614,7 +619,9 @@ tretcode smpl_hdcwait(tevent evt)
 
 tretcode smpl_hdcread(tevent evt)
 {
+    tretcode rc = tr_ok;
     int temp, rh;
+    int batv, batv_mv;
 
     /* Disable HDCint P4.3 rising edge interrupt. */
     P4IE &= ~BIT3 ; // Disable interrupt on port 2 bit 3.
@@ -626,12 +633,19 @@ tretcode smpl_hdcread(tevent evt)
     {
         // Looping around
         nvparams_cresetsperloop();
+        // Check battery voltage
+        batv = enc_getbatv();
+        batv_mv = batv_to_mv(batv);
+        if (batv_mv < nvparams_getminvoltagemv()) {
+            enc_init(0, true, batv);    // Write an error message
+            rc = tr_fail;               // Drop into LPM4.
+        }
     }
 
     /* Power down the MEM domain. */
     memoff();
 
-    return tr_ok;
+    return rc;
 }
 
 
@@ -643,7 +657,7 @@ tretcode smpl_wait(tevent evt)
     // Kick the watchdog.
     wdog_kick();
 
-    if (evt == evt_rtc)
+    if ((evt == evt_rtc) || (nvparams_getsmplintmins()==0))
     {
         rc = tr_timeout;
     }

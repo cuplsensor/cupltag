@@ -15,7 +15,7 @@
 #define DEFAULT_SLEEPINTDAYS    0
 #define DEFAULT_RANDSTATE       0x4D4C
 #define MINUTES_PER_DAY         1440
-#define INTEGERFIELD_LENBYTES   4
+#define INTEGERFIELD_LENBYTES   5           // Value up to 65535 (5 ASCII digits)
 
 #pragma DATA_SECTION(nv, ".info");
 nv_t nv;
@@ -30,6 +30,11 @@ char * nvparams_getserial()
 char * nvparams_getsecretkey()
 {
     return nv.seckey;
+}
+
+unsigned int nvparams_getminvoltagemv(void)
+{
+    return nv.minvoltagemv;
 }
 
 unsigned int nvparams_getsmplintmins()
@@ -95,24 +100,31 @@ bool nvparams_write(char id, char * valptr, unsigned int payloadlen)
         strncpy(nv.seckey, valptr, payloadlen);
         writtenfields |= BIT1;
     }
-    else if ((id == 'v') && (payloadlen == VERSION_LENBYTES))
-    {
-        strncpy(nv.version, valptr, payloadlen);
-        writtenfields |= BIT2;
-    }
     else if ((id== 'b') && (payloadlen < BASEURL_LENBYTES))
     {
         strncpy(nv.baseurl, valptr, payloadlen);
         nv.baseurl[payloadlen] = 0;
         writtenfields |= BIT5;
     }
-    else if ((id == 't') && (payloadlen <= INTEGERFIELD_LENBYTES))
+    else if ((id == 'f') && (payloadlen <= FORMAT_ASCII_MAXLEN))
     {
-        strncpy(temp, valptr, payloadlen); // Copy to tparam to ensure null termination.
+        strncpy(temp, valptr, payloadlen); // Copy to temp to ensure null termination.
+        nv.format = atoi(temp);
+        writtenfields |= BIT2;
+    }
+    else if ((id == 't') && (payloadlen <= SMPLINTERVAL_ASCII_MAXLEN))
+    {
+        strncpy(temp, valptr, payloadlen); // Copy to temp to ensure null termination.
         smplintervalmins = atoi(temp);
         nv.smplintervalmins[0] = smplintervalmins & 0xFF;
         nv.smplintervalmins[1] = smplintervalmins >> 8;
         writtenfields |= BIT3;
+    }
+    else if ((id == 'u') && (payloadlen <= MINVOLTAGEMV_ASCII_MAXLEN))
+    {
+        strncpy(temp, valptr, payloadlen); // Copy to temp to ensure null termination.
+        nv.minvoltagemv = atoi(temp);
+        writtenfields |= BIT4;
     }
     else if ((id == 'h') && (payloadlen == 1))
     {
@@ -133,7 +145,7 @@ bool nvparams_write(char id, char * valptr, unsigned int payloadlen)
         validpacket = false;
     }
 
-    if ((writtenfields ^ (BIT0 | BIT1 | BIT2 | BIT3 | BIT5 | BIT6 | BIT7)) == 0)
+    if ((writtenfields ^ 0xFF) == 0)
     {
         nv.allwritten = 0;
         nv.resetsperloop = 0;
