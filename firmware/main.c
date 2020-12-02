@@ -439,6 +439,26 @@ tretcode init_ntag(tevent evt)
 {
     tretcode rc;
     int nPRG;
+    int slaveaddr = 1;
+
+//    nt3h_init();
+
+//    for (slaveaddr=1; slaveaddr<=255; slaveaddr++) {
+//        GPIO_setOutputLowOnPin(
+//                GPIO_PORT_P4,
+//                GPIO_PIN2
+//        );
+//        __delay_cycles(1000000);
+//        GPIO_setOutputHighOnPin(
+//                        GPIO_PORT_P4,
+//                        GPIO_PIN2
+//                );
+//        __delay_cycles(1000000);
+//        i2c_init();
+//        i2c_readreg(slaveaddr, 0, 0xFF);
+//    }
+
+
 
     // Checks for an NFC text record.
     if (confignfc_check())

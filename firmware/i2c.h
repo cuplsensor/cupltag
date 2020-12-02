@@ -14,7 +14,7 @@ void i2c_init();
 
 
 int i2c_readreg(uint8_t slaveAddr, uint8_t mema, uint8_t rega);
-void i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, uint8_t * rxData, uint8_t rega);
+int i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, uint8_t * rxData, uint8_t rega);
 int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, uint8_t * txData);
 
 uint8_t i2c_read8(uint8_t slaveAddr, uint8_t regOffset);

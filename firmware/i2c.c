@@ -129,7 +129,7 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
         __bis_SR_register(CPUOFF + GIE);    // Enter LPM0 w/ interrupt
     }
 
-    while(stopFlag == false)
+    while((stopFlag == false) && (retransmitCounter++ < 100))
     {
         __bis_SR_register(CPUOFF + GIE);    // Enter LPM0 w/ interrupt
     }
@@ -143,15 +143,21 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
                                  EUSCI_B_I2C_NAK_INTERRUPT
     );
 
+    if (retransmitCounter++ > 100)
+    {
+        success = -1;
+    }
+
     return success;
 
 }
 
-void i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, uint8_t * rxData, uint8_t rega)
+int i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, uint8_t * rxData, uint8_t rega)
 {
     int i;
     int retransmitCounter = 0;
     int bytesToWrite;
+    int success;
     uint8_t txData = 0;
 
     if (rega == 0xFF)
@@ -164,7 +170,16 @@ void i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, u
         txData = rega;
     }
 
-    while(i2c_write_block(slaveAddr, regOffset, bytesToWrite, &txData)==0);
+    while(1) {
+        success = i2c_write_block(slaveAddr, regOffset, bytesToWrite, &txData);
+        if (success != 0) {
+            break;
+        }
+    }
+
+    if (success == -1) {
+        return -1;
+    }
 
     //Disable the USCI module and clears the other bits of control register
     EUSCI_B_I2C_disable(EUSCI_BASE);
@@ -220,6 +235,8 @@ void i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, u
     {
         *(rxData + i) = buffer[i];
     }
+
+    return success;
 
 }
 
@@ -320,7 +337,8 @@ void USCIB1_ISR(void)
         break;       // Vector 26: TXIFG0 break;
     case 0x1a:
         break;           // Vector 28: BCNTIFG break;
-    case 0x1c: break;       // Vector 30: clock low timeout break;
+    case 0x1c:
+        break;       // Vector 30: clock low timeout break;
     case 0x1e: break;       // Vector 32: 9th bit break;
     default: break;
     }

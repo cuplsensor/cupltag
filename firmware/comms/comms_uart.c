@@ -13,7 +13,7 @@
 #include <string.h>
 
 #define HW_VERSION    HT04
-#define FW_VERSION    1
+#define FW_VERSION    1.1
 
 #define    XSTR(V)        #V
 #define    STR(V)        XSTR(V)
@@ -136,6 +136,10 @@ t_uretcode uart_init(t_uevent evt)
     UCA0BR0 = 0x82;                 // Baud rate register. 1MHz / 9600baud.
     UCA0BR1 = 0x06;
     UCA0MCTLW   = 0x04;
+
+    // Enable parity bit detection and generation. Even parity.
+    UCA0CTLW0 |= UCPEN;
+    UCA0CTLW0 |= UCPAR;
 
     // Clear UCSWRST flag. Leave reset.
     UCA0CTL1 &= ~UCSWRST;
