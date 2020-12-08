@@ -1,6 +1,4 @@
-
-
-/Debug/*
-!/Debug/*.txt
+/Debug/
 /Release/
-/Release2/
+/Release2/*
+!/Release2/*.txt
