@@ -2,3 +2,4 @@
 /Release/
 /Release2/*
 !/Release2/*.txt
+/Release2/

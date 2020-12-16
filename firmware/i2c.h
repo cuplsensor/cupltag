@@ -11,6 +11,7 @@
 #include "driverlib.h"
 
 void i2c_init();
+void i2c_off();
 
 
 int i2c_readreg(uint8_t slaveAddr, uint8_t mema, uint8_t rega);

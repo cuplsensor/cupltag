@@ -275,6 +275,8 @@ static void memoff()
             GPIO_PORT_P4,
             GPIO_PIN2
     );
+
+    i2c_off();
 }
 
 // sensorinit -> memon. FDint OFF. RTCint OFF.

@@ -41,6 +41,10 @@ void i2c_init()
 
 }
 
+void i2c_off() {
+    EUSCI_B_I2C_disable(EUSCI_BASE);
+}
+
 uint8_t i2c_write8(uint8_t slaveAddr, uint8_t regOffset, uint8_t writeData)
 {
     while(i2c_write_block(slaveAddr, regOffset, 1, &writeData)==0);
