@@ -13,14 +13,14 @@
 #include <string.h>
 
 #define HW_VERSION    HT04
-#define FW_VERSION    1.1
+#define FW_VERSION    1.2
 
 #define    XSTR(V)        #V
 #define    STR(V)        XSTR(V)
 
 #define    VERSION        STR(HW_VERSION) "_F" STR(FW_VERSION) "_C" STR(CODEC_VERSION)
 
-static char __version__[] = VERSION;
+static char __version__[] = "<x:" VERSION ">";
 
 typedef enum uart_ret_codes {
     rc_ok,
@@ -171,7 +171,6 @@ t_uretcode uart_prepRx(t_uevent evt)
 t_uretcode uart_waitforRx(t_uevent evt)
 {
     t_uretcode rc = rc_wait;
-    int i;
 
     if (evt == evt_rxdone)
     {
@@ -188,7 +187,6 @@ t_uretcode uart_pcktrxed(t_uevent evt)
 {
     t_uretcode rc = rc_ok;
     bool validpacket;
-    unsigned int i = 0;
     char id = uartBuffer[INDEX_ID];
     char len = bufIndex - INDEX_VAL;
 

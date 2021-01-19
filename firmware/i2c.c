@@ -69,9 +69,7 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
     int success = 0;
     int retransmitCounter = 0;
 
-    /* If I2C bus is currently being used
-     * do not attempt to manipulate any I2C vars or registers */
-    while(EUSCI_B_I2C_isBusBusy(EUSCI_BASE) == EUSCI_B_I2C_BUS_BUSY);
+    retransmitCounter = 0;
 
     bytesLength = bytesToWrite;
 
@@ -110,17 +108,10 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
                                 EUSCI_B_I2C_NAK_INTERRUPT
                                 );
 
-    //__delay_cycles(100);
-    // I2C start condition
-//    while(EUSCI_B_I2C_SENDING_STOP == EUSCI_B_I2C_masterIsStopSent(EUSCI_BASE))
-//    {
-//    ;
-//    }
 
     restartTx = true;
     stopFlag = false;
     gbl_regOffset = regOffset;
-
 
 
     success = EUSCI_B_I2C_masterSendMultiByteStartWithTimeout(EUSCI_BASE, gbl_regOffset, 1000);
@@ -139,6 +130,7 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
     }
 
     restartTx = false;
+
 
     //Disable master transmit interrupt
     EUSCI_B_I2C_disableInterrupt(EUSCI_BASE,

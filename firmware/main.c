@@ -227,7 +227,7 @@ tstate lookup_transitions(tstate curstate, tretcode rc)
     return nextstate;
 }
 
-static void writetxt(char * msgptr, char len) {
+static void writetxt(const char * msgptr, int len) {
     int eepindex = 0;
     int blk;
 
@@ -441,26 +441,9 @@ tretcode init_ntag(tevent evt)
 {
     tretcode rc;
     int nPRG;
-    int slaveaddr = 1;
 
-//    nt3h_init();
-
-//    for (slaveaddr=1; slaveaddr<=255; slaveaddr++) {
-//        GPIO_setOutputLowOnPin(
-//                GPIO_PORT_P4,
-//                GPIO_PIN2
-//        );
-//        __delay_cycles(1000000);
-//        GPIO_setOutputHighOnPin(
-//                        GPIO_PORT_P4,
-//                        GPIO_PIN2
-//                );
-//        __delay_cycles(1000000);
-//        i2c_init();
-//        i2c_readreg(slaveaddr, 0, 0xFF);
-//    }
-
-
+    //nt3h_init_wrongaddress();
+    nt3h_check_address();
 
     // Checks for an NFC text record.
     if (confignfc_check())
@@ -468,11 +451,8 @@ tretcode init_ntag(tevent evt)
         confignfc_readtext(); // Configure from text records.
     }
 
-
     /* Initialise the NTAG. */
     nt3h_init();
-
-    /* Read the whoami registers of both the NT3H and the HDC2010. */
 
     /* Check nPRG. */
     nPRG = GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN5);
@@ -765,8 +745,6 @@ void main(void)
     tstate cur_state = ENTRY_STATE;
     tretcode rc;
     tretcode (* state_fun)(tevent);
-
-
 
 
     while (1) {
