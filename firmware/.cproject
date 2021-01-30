@@ -106,7 +106,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="lnk_msp430fr2153.cmd|lnk_msp430fr2033.cmd|driverlib/MSP430FR5xx_6xx|hts221.c|lnk_msp430fr5969.cmd|lnk_msp430fr5994.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="lnk_msp430fr2153.cmd|lnk_msp430fr2033.cmd|driverlib/MSP430FR5xx_6xx|lnk_msp430fr5969.cmd|lnk_msp430fr5994.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
@@ -315,7 +315,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="lnk_msp430fr2033.cmd|lnk_msp430fr2153.cmd|driverlib/MSP430FR5xx_6xx|hts221.c|lnk_msp430fr5969.cmd|lnk_msp430fr5994.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="lnk_msp430fr2033.cmd|lnk_msp430fr2153.cmd|driverlib/MSP430FR5xx_6xx|lnk_msp430fr5969.cmd|lnk_msp430fr5994.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
