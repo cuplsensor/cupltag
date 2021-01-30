@@ -22,58 +22,26 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "stat.h"
-#include "stat_bits.h"
+#ifndef COMMS_NVPARAMS_H_
+#define COMMS_NVPARAMS_H_
 
-#include <msp430.h>
+#include <stdbool.h>
 
 
+char * nvparams_getserial(void);
+char * nvparams_getsecretkey(void);
+unsigned int nvparams_getversion(void);
+unsigned int nvparams_getsmplintmins(void);
+long nvparams_getsleepintmins(void);
+unsigned int nvparams_getminvoltagemv(void);
+// Resets
+int nvparams_getresetsperloop(void);
+int nvparams_getresetsalltime(void);
+void nvparams_cresetsperloop(void);
+void nvparams_incrcounters(void);
+bool nvparams_allwritten(void);
 
-unsigned int rstcause = 0;
 
-void stat_rdrstcause()
-{
-    unsigned int sysrstiv;
+bool nvparams_write(char id, char * valptr, unsigned int payloadLen);
 
-    sysrstiv = SYSRSTIV;
-
-    switch(sysrstiv)
-    {
-    case SYSRSTIV_SVSHIFG:
-        rstcause |= SVSH_BIT;
-        break;
-    case SYSRSTIV_BOR:
-        rstcause |= BOR_BIT;
-        break;
-    case SYSRSTIV_WDTTO:
-        rstcause |= WDT_BIT;
-        break;
-    case SYSRSTIV_LPM5WU:
-        rstcause |= LPM5WU_BIT;
-        break;
-    case SYSRSTIV_NONE:
-        break;
-    case SYSRSTIV_RSTNMI:
-        break;
-    default:
-        rstcause |= MISC_BIT;
-        break;
-    }
-}
-
-void stat_setclockfailure()
-{
-    rstcause |= CLOCKFAIL_BIT;
-}
-
-void stat_setscantimeout()
-{
-    rstcause |= SCANTIMEOUT_BIT;
-}
-
-unsigned int stat_get(bool * err, int resetsalltime)
-{
-    *err = ((rstcause & ERR_BITS) > 0);
-    resetsalltime = resetsalltime >> 4;
-    return (resetsalltime << 8) | (rstcause & 0xFF);
-}
+#endif /* COMMS_NVPARAMS_H_ */

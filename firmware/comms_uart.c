@@ -1,8 +1,25 @@
-/*
- * comms_uart.c
+/*  This MSP430FR2155 program collects data from an HDC2010 sensor and
+ *  passes it to the encoder part of cuplcodec.
  *
- *  Created on: 2 Sep 2014
- *      Author: Malcolm
+ *  https://github.com/cuplsensor/cupltag
+ *
+ *  Original Author: Malcolm Mackay
+ *  Email: malcolm@plotsensor.com
+ *
+ *  Copyright (C) 2021. Plotsensor Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #include "comms_uart.h"
@@ -133,9 +150,9 @@ t_uretcode uart_init(t_uevent evt)
     // Initialise the USCI registers.
     /* http://mspgcc.sourceforge.net/cgi-bin/msp-uart.pl?clock=1500000&baud=9600&submit=calculate */
     UCA0CTL1 |= UCSSEL__SMCLK;      // CLK = SMCLK
-    UCA0BR0 = 0x82;                 // Baud rate register. 1MHz / 9600baud.
-    UCA0BR1 = 0x06;
-    UCA0MCTLW   = 0x04;
+    UCA0BR0 = 0x68;                 // Baud rate register. 1MHz / 9600baud.
+    UCA0BR1 = 0x00;
+    UCA0MCTLW = UCBRS0;
 
     // Clear UCSWRST flag. Leave reset.
     UCA0CTL1 &= ~UCSWRST;

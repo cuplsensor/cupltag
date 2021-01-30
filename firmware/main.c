@@ -1,3 +1,27 @@
+/*  This MSP430FR2155 program collects data from an HDC2010 sensor and
+ *  passes it to the encoder part of cuplcodec.
+ *
+ *  https://github.com/cuplsensor/cupltag
+ *
+ *  Original Author: Malcolm Mackay
+ *  Email: malcolm@plotsensor.com
+ *
+ *  Copyright (C) 2021. Plotsensor Ltd.
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "driverlib.h"
 #include "hdc2010.h"
 #include "sample.h"
@@ -11,7 +35,7 @@
 #include <stdlib.h>
 
 
-#define CS_SMCLK_DESIRED_FREQUENCY_IN_KHZ   16000       /*!< Target frequency for SMCLK in kHz. */
+#define CS_SMCLK_DESIRED_FREQUENCY_IN_KHZ   1000       /*!< Target frequency for SMCLK in kHz. */
 
 #define CS_XT1_CRYSTAL_FREQUENCY            32768       /*!< Resonant frequency of the XT1 crystal in kHz. */
 #define CS_XT1_TIMEOUT                      65000       /*!< Timeout for XT1 to stabilise at the resonant frequency in SMCLK cycles. */
@@ -174,7 +198,7 @@ struct transition state_transitions[] = {
                                          {sc_init_progmode,  tr_fail,    sc_err_reqmemon},
 
                                          {sc_init_configcheck,  tr_ok,   sc_init_errorcheck},
-                                         {sc_init_configcheck,         tr_fail, sc_end},
+                                         {sc_init_configcheck,  tr_fail, sc_end},
 
                                          {sc_init_errorcheck,  tr_ok,      sc_init_rtc},
                                          {sc_init_errorcheck,  tr_fail,    sc_end},
@@ -276,6 +300,9 @@ static void memoff()
             GPIO_PIN2
     );
 
+    // Stop the timer if it is running. The RTC should be used for delays when VMEM=0V
+    Timer_B_stop(TB1_BASE);
+
     i2c_off();
 }
 
@@ -293,15 +320,16 @@ tretcode init_state(tevent evt)
     WDTCTL = WDTPW | WDTHOLD;               // Stop WDT
     PMM_disableSVSH(); // Disable Supply Voltage Supervisor.
 
-    //Set wait state to 1
-    FRAMCtl_configureWaitStateControl(FRAMCTL_ACCESS_TIME_CYCLES_1);
+
+    //Set wait state to 1. Not needed if the main clock is 1 MHz.
+    //FRAMCtl_configureWaitStateControl(FRAMCTL_ACCESS_TIME_CYCLES_1);
 
     // Initialise IO to reduce power.
     // P1.2 FD as input
     // P1.1 UART RX as input
     // P4.2 HDC_INT as input
     // P2.7 EN as output low
-    P1DIR = 0x3F; P2DIR = 0x3F; P3DIR = 0xDF; P4DIR = 0x00;
+    P1DIR = 0xBF; P2DIR = 0xFF; P3DIR = 0xDF; P4DIR = 0xFB;
     P5DIR = 0xFF; P6DIR = 0xFF; P7DIR = 0xFF; P8DIR = 0xFF;
     P1OUT = 0x00; P2OUT = 0x00; P3OUT = 0x00; P4OUT = 0x00;
     P5OUT = 0x00; P6OUT = 0x00; P7OUT = 0x00; P8OUT = 0x00;
@@ -332,7 +360,7 @@ tretcode init_state(tevent evt)
             CS_CLOCK_DIVIDER_1
     );
 
-    //Set DCO FLL reference = REFO
+    //Set DCO FLL reference = XT1
     CS_initClockSignal(
             CS_FLLREF,
             CS_XT1CLK_SELECT,
@@ -340,10 +368,11 @@ tretcode init_state(tevent evt)
     );
 
 
-    //Set Ratio and Desired MCLK Frequency  and initialize DCO
+    // Set Ratio and Desired MCLK Frequency  and initialize DCO
+    // 1MHz / 32.768 kHz = 30.5
     error = CS_initFLLSettle(
                 CS_SMCLK_DESIRED_FREQUENCY_IN_KHZ,
-                487
+                31
     );
 
 
@@ -367,6 +396,9 @@ tretcode init_state(tevent evt)
             CS_CLOCK_DIVIDER_1
     );
 
+    // Enable low power mode for REFO.
+    //CS_enableREFOLP();
+
     // Enable watchdog timer.
     wdog_kick();
 
@@ -382,7 +414,6 @@ tretcode init_state(tevent evt)
             GPIO_PIN6
     );
 
-
     return tr_ok;
 }
 
@@ -390,7 +421,7 @@ static tretcode reqmemon(tevent evt)
 {
     /* Power up the I2C bus. */
     // P4.3 HDC_INT as input
-    GPIO_setAsInputPin(
+    GPIO_setAsInputPinWithPullDownResistor(
             GPIO_PORT_P4,
             GPIO_PIN3
     );
@@ -405,7 +436,6 @@ static tretcode reqmemon(tevent evt)
             GPIO_PORT_P4,
             GPIO_PIN2
     );
-
 
     start_timer(2*CP10MS);
 
@@ -442,8 +472,13 @@ tretcode init_ntag(tevent evt)
     tretcode rc;
     int nPRG;
 
+
+
     //nt3h_init_wrongaddress();
     nt3h_check_address();
+
+    //memoff();
+    //__bis_SR_register(LPM3_bits + GIE);
 
     // Checks for an NFC text record.
     if (confignfc_check())
@@ -464,6 +499,8 @@ tretcode init_ntag(tevent evt)
         writetxt(ndefmsg_progmode, sizeof(ndefmsg_progmode));
         rc = tr_prog;
     }
+
+
 
     return rc;
 }
@@ -596,13 +633,13 @@ tretcode err_msg(tevent evt)
 
 tretcode smpl_hdcreq(tevent evt)
 {
-    /* Enable HDCint P4.2 rising edge interrupt. */
+    /* Enable HDCint P4.3 rising edge interrupt. */
     P4IFG &= ~BIT3; // Clear flag.
     P4IES |= BIT3; // Falling edge detect.
 
     hdc2010_startconv();
 
-    P4IE |= BIT3;  // Allow interrupt.
+    GPIO_enableInterrupt(GPIO_PORT_P4, GPIO_PIN3);
 
     return tr_ok;
 }
@@ -626,7 +663,7 @@ tretcode smpl_hdcread(tevent evt)
     int batv, batv_mv;
 
     /* Disable HDCint P4.3 rising edge interrupt. */
-    P4IE &= ~BIT3 ; // Disable interrupt on port 2 bit 3.
+    GPIO_disableInterrupt(GPIO_PORT_P4, GPIO_PIN3);
 
     // Read temperature and humidity from the sensor.
     hdc2010_read_temp(&temp, &rh);
