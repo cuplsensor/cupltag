@@ -11,8 +11,6 @@ The firmware spends much of its time in LPM3 in order to achieve an average curr
 ## Documentation 
 
 [![Documentation Status](https://readthedocs.org/projects/wsbackend/badge/?version=latest)](https://cupl.readthedocs.io/projects/backend/en/latest/?badge=latest) 
-
-Hosted on [ReadTheDocs](https://cupl.readthedocs.io/projects/backend/en/latest/). This includes information on how to install the software from scratch without Docker.
     
 ## Licence
 
