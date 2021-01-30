@@ -1,5 +1,5 @@
 # cuplTag
-The cuplTag firmware runs on an [MSP430FR2155](https://www.ti.com/product/MSP430FR2155). It collects samples from an [HDC2021](https://www.ti.com/product/HDC2021) sensor 
+The [cuplTag](https://cupl.co.uk/index.php/cupltag/) firmware runs on an [MSP430FR2155](https://www.ti.com/product/MSP430FR2155). It collects samples from an [HDC2021](https://www.ti.com/product/HDC2021) sensor 
 and passes it to the encoder part of [cuplcodec](https://github.com/cuplsensor/cuplcodec) at a used-defined time interval. The output is a URL. This is written to an NFC EEPROM 
 ([NT3H2111](https://www.nxp.com/docs/en/data-sheet/NT3H2111_2211.pdf)), which is connected to a Type 6 antenna. 
 The URL origin is configurable. 
