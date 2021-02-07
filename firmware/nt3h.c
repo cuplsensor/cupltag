@@ -29,9 +29,9 @@
 #include "defs.h"
 
 unsigned char rxData[16] = {0};
-unsigned char txData[16] = {0};
-unsigned char chunk1Data[50] = {0};
-unsigned char chunk2Data[50] = {0};
+//unsigned char txData[16] = {0};
+//unsigned char chunk1Data[50] = {0};
+//unsigned char chunk2Data[50] = {0};
 
 #define DEVADDR     0x55 // Careful. Was 0x55. Got overwritten.
 
@@ -91,7 +91,7 @@ void nt3h_check_address(void)
             if ((success>=0) && (slaveaddr != 0x40))
             {
                 // If a response has been received and it is not from 0x40 (HDC2010)
-                // break out of the loop.
+                // correct the device address and break out of the loop.
                 rxData[0] = DEVADDR << 1;
                 rxData[12] = 0xE1;
                 rxData[13] = 0x10;

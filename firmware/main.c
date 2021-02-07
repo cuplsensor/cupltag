@@ -42,12 +42,30 @@
 
 #define CP10MS                                  41      /*!< ACLK Cycles Per 10 MilliSeconds. Assumes ACLK = 32768 kHz and a divide-by-8. */
 
+
 #define EXIT_STATE sc_end                               /*!< State machine exit state. */
 #define ENTRY_STATE sc_init                             /*!< State machine entry state. */
 
-volatile int rtcFlag = 0;                               /*!< Flag set by the Real-Time-Clock Interrupt Service Route. */
+#define FRAM_WRITE_ENABLE
+#define FRAM_WRITE_DISABLE
+
+void fram_write_enable() {
+
+    __disable_interrupt();      // TI advise against having interrupts enabled during a write of Program FRAM.
+    SYSCFG0 = FRWPPW | DFWP;    // Clear the PFWP bit (program FRAM write protect). Leave the DFWP bit set (user FRAM).
+}
+
+void fram_write_disable() {
+    SYSCFG0 = FRWPPW | DFWP | PFWP;  // Set both program FRAM and user FRAM write protect bits.
+    __enable_interrupt();            // Re-enable global interrupts after the FRAM write has completed.
+}
+
 volatile int timerFlag = 0;                             /*!< Flag set by the Timer Interrupt Service Routine. */
 volatile int hdcFlag = 0;                               /*!< Flag set by the HDC2021 humidity sensor data-ready Interrupt Service Routine. */
+
+
+#pragma PERSISTENT(minutecounter)
+int minutecounter = 0;                                      /*!< Incremented each time the sampling loop is run. */
 
 const char ndefmsg_progmode[] = {0x03, 0x3D, 0xD1, 0x01,
                                  0x39, 0x54, 0x02, 0x65,
@@ -100,16 +118,15 @@ typedef enum state_codes {
     sc_init_progmode,
     sc_init_configcheck,
     sc_init_errorcheck,
-    sc_init_rtc,
+    sc_init_wakeupcheck,
+    sc_init_rtc_slow,
+    sc_init_rtc_1min,
     sc_smpl_checkcounter,
     sc_smpl_hdcreq,
     sc_smpl_hdcwait,
     sc_smpl_hdcread,
     sc_smpl_wait,
-    sc_rtc_reqmemon,
-    sc_rtc_waitmemon,
-    sc_err_reqmemon,
-    sc_err_waitmemon,
+    sc_tst_wait,
     sc_err_msg,
     sc_end
 } tstate;
@@ -117,16 +134,20 @@ typedef enum state_codes {
 typedef enum ret_codes { 
     tr_ok,
     tr_prog,
+    tr_newconfig,
     tr_hdcreq,
     tr_updatemin,
+    tr_deepsleep,
+    tr_lowbat,
     tr_fail,
-    tr_timeout,
+    tr_testmode,
+    tr_samplingloop,
+    tr_por,
     tr_wait
 } tretcode;
 
 typedef enum event_codes {
     evt_none,
-    evt_rtc,
     evt_timerfinished,
     evt_hdcint
 } tevent;
@@ -139,16 +160,15 @@ tretcode init_ntag(tevent);
 tretcode init_progmode(tevent);
 tretcode init_configcheck(tevent);
 tretcode init_errorcheck(tevent);
-tretcode init_rtc(tevent);
+tretcode init_wakeupcheck(tevent);
+tretcode init_rtc_slow(tevent);
+tretcode init_rtc_1min(tevent);
 tretcode smpl_checkcounter(tevent);
 tretcode smpl_hdcreq(tevent);
 tretcode smpl_hdcwait(tevent);
 tretcode smpl_hdcread(tevent);
 tretcode smpl_wait(tevent);
-tretcode rtc_reqmemon(tevent);
-tretcode rtc_waitmemon(tevent);
-tretcode err_reqmemon(tevent);
-tretcode err_waitmemon(tevent);
+tretcode tst_wait(tevent);
 tretcode err_msg(tevent);
 tretcode end_state(tevent);
 
@@ -161,16 +181,15 @@ tretcode (* state_fcns[])(tevent) = {
                           init_progmode,
                           init_configcheck,
                           init_errorcheck,
-                          init_rtc,
+                          init_wakeupcheck,
+                          init_rtc_slow,
+                          init_rtc_1min,
                           smpl_checkcounter,
                           smpl_hdcreq,
                           smpl_hdcwait,
                           smpl_hdcread,
                           smpl_wait,
-                          rtc_reqmemon,
-                          rtc_waitmemon,
-                          err_reqmemon,
-                          err_waitmemon,
+                          tst_wait,
                           err_msg,
                           end_state
 };
@@ -190,20 +209,26 @@ struct transition state_transitions[] = {
                                          {sc_init_waitmemon, tr_ok,      sc_init_ntag},
                                          {sc_init_waitmemon, tr_wait,    sc_init_waitmemon},
 
-                                         {sc_init_ntag,      tr_ok,      sc_init_configcheck},
-                                         {sc_init_ntag,      tr_prog,    sc_init_progmode},
+                                         {sc_init_ntag,    tr_ok,        sc_init_wakeupcheck},
+                                         {sc_init_ntag,    tr_newconfig, sc_init_rtc_slow},
+                                         {sc_init_ntag,    tr_prog,      sc_init_progmode},
 
                                          {sc_init_progmode,  tr_ok,      sc_init_progmode},
                                          {sc_init_progmode,  tr_wait,    sc_init_progmode},
-                                         {sc_init_progmode,  tr_fail,    sc_err_reqmemon},
+                                         {sc_init_progmode,  tr_fail,    sc_err_msg},
 
-                                         {sc_init_configcheck,  tr_ok,   sc_init_errorcheck},
-                                         {sc_init_configcheck,  tr_fail, sc_end},
+                                         {sc_init_wakeupcheck,  tr_por,           sc_init_rtc_slow},
+                                         {sc_init_wakeupcheck,  tr_samplingloop,  sc_smpl_checkcounter},
 
-                                         {sc_init_errorcheck,  tr_ok,      sc_init_rtc},
-                                         {sc_init_errorcheck,  tr_fail,    sc_end},
+                                         {sc_init_rtc_slow,  tr_ok,   sc_init_configcheck},
 
-                                         {sc_init_rtc,      tr_ok,      sc_smpl_checkcounter},
+                                         {sc_init_configcheck,  tr_ok,          sc_init_errorcheck},
+                                         {sc_init_configcheck,  tr_deepsleep,   sc_end},
+
+                                         {sc_init_errorcheck,  tr_ok,           sc_init_rtc_1min},
+                                         {sc_init_errorcheck,  tr_deepsleep,    sc_end},
+
+                                         {sc_init_rtc_1min,    tr_ok,      sc_smpl_checkcounter},
 
                                          {sc_smpl_checkcounter, tr_hdcreq,      sc_smpl_hdcreq},
                                          {sc_smpl_checkcounter, tr_updatemin,   sc_smpl_wait},
@@ -214,29 +239,22 @@ struct transition state_transitions[] = {
                                          {sc_smpl_hdcwait,  tr_wait,    sc_smpl_hdcwait},
 
                                          {sc_smpl_hdcread,  tr_ok,      sc_smpl_wait},
-                                         {sc_smpl_hdcread,  tr_fail,    sc_end},
+                                         {sc_smpl_hdcread,  tr_lowbat,  sc_end},
 
-                                         {sc_smpl_wait,     tr_timeout,     sc_rtc_reqmemon},
-                                         {sc_smpl_wait,     tr_wait,        sc_smpl_wait},
+                                         {sc_smpl_wait,     tr_testmode,    sc_tst_wait},
+                                         {sc_smpl_wait,     tr_deepsleep,   sc_end},
 
-                                         {sc_rtc_reqmemon,  tr_ok,      sc_rtc_waitmemon},
+                                         {sc_tst_wait, tr_ok,     sc_smpl_checkcounter},
+                                         {sc_tst_wait, tr_wait,   sc_tst_wait},
 
-                                         {sc_rtc_waitmemon, tr_ok, sc_smpl_checkcounter},
-                                         {sc_rtc_waitmemon, tr_wait,   sc_rtc_waitmemon},
-
-                                         {sc_err_reqmemon,  tr_ok,     sc_err_waitmemon},
-
-                                         {sc_err_waitmemon, tr_ok,      sc_err_msg},
-                                         {sc_err_waitmemon, tr_wait,    sc_err_waitmemon},
-
-                                         {sc_err_msg,  tr_ok,     sc_end}
+                                         {sc_err_msg,  tr_deepsleep,     sc_end}
                                          
 };
 
 /* Look up transitions from the table for a current state and given return code. */
 tstate lookup_transitions(tstate curstate, tretcode rc)
 {
-    tstate nextstate = sc_err_reqmemon; /* This should never be reached. */
+    tstate nextstate = sc_err_msg; /* This should never be reached. */
     int i=0;
 
     for (i=0; i<sizeof(state_transitions)/sizeof(state_transitions[0]); i++)
@@ -270,25 +288,25 @@ static void wdog_kick()
 static void start_timer(unsigned int intervalCycles)
 {
     // Start timer in continuous mode sourced by SMCLK
-        Timer_B_initContinuousModeParam initContParam = {0};
-        initContParam.clockSource = TIMER_B_CLOCKSOURCE_ACLK;
-        initContParam.clockSourceDivider = TIMER_B_CLOCKSOURCE_DIVIDER_8;
-        initContParam.timerInterruptEnable_TBIE = TIMER_B_TBIE_INTERRUPT_DISABLE;
-        initContParam.timerClear = TIMER_B_DO_CLEAR;
-        initContParam.startTimer = false;
-        Timer_B_initContinuousMode(TB1_BASE, &initContParam);
+    Timer_B_initContinuousModeParam initContParam = {0};
+    initContParam.clockSource = TIMER_B_CLOCKSOURCE_ACLK;
+    initContParam.clockSourceDivider = TIMER_B_CLOCKSOURCE_DIVIDER_8;
+    initContParam.timerInterruptEnable_TBIE = TIMER_B_TBIE_INTERRUPT_DISABLE;
+    initContParam.timerClear = TIMER_B_DO_CLEAR;
+    initContParam.startTimer = false;
+    Timer_B_initContinuousMode(TB1_BASE, &initContParam);
 
-        //Initialise compare mode
-        Timer_B_clearCaptureCompareInterrupt(TB1_BASE, TIMER_B_CAPTURECOMPARE_REGISTER_0);
+    //Initialise compare mode
+    Timer_B_clearCaptureCompareInterrupt(TB1_BASE, TIMER_B_CAPTURECOMPARE_REGISTER_0);
 
-        Timer_B_initCompareModeParam initCompParam = {0};
-        initCompParam.compareRegister = TIMER_B_CAPTURECOMPARE_REGISTER_0;
-        initCompParam.compareInterruptEnable = TIMER_B_CAPTURECOMPARE_INTERRUPT_ENABLE;
-        initCompParam.compareOutputMode = TIMER_B_OUTPUTMODE_OUTBITVALUE;
-        initCompParam.compareValue = intervalCycles;
-        Timer_B_initCompareMode(TB1_BASE, &initCompParam);
+    Timer_B_initCompareModeParam initCompParam = {0};
+    initCompParam.compareRegister = TIMER_B_CAPTURECOMPARE_REGISTER_0;
+    initCompParam.compareInterruptEnable = TIMER_B_CAPTURECOMPARE_INTERRUPT_ENABLE;
+    initCompParam.compareOutputMode = TIMER_B_OUTPUTMODE_OUTBITVALUE;
+    initCompParam.compareValue = intervalCycles;
+    Timer_B_initCompareMode(TB1_BASE, &initCompParam);
 
-        Timer_B_startCounter(TB1_BASE, TIMER_B_CONTINUOUS_MODE);
+    Timer_B_startCounter(TB1_BASE, TIMER_B_CONTINUOUS_MODE);
 }
 
 
@@ -306,23 +324,12 @@ static void memoff()
     i2c_off();
 }
 
-// sensorinit -> memon. FDint OFF. RTCint OFF.
-// waitforserial -> memoff. FDint ON. RTCint OFF.
-// reqsensor -> memon. FDint ON. HDCint ON. RTCint OFF.
-// updateurl -> memon. FDint ON. RTCint OFF.
-// updatesc -> memon. FDint OFF. RTCint ON. wait a few seconds before leaving this state as hysteresis.
-// waitrtc -> memoff. FDint ON. RTCint ON.
-
 tretcode init_state(tevent evt)
 {
     int error;
 
     WDTCTL = WDTPW | WDTHOLD;               // Stop WDT
     PMM_disableSVSH(); // Disable Supply Voltage Supervisor.
-
-
-    //Set wait state to 1. Not needed if the main clock is 1 MHz.
-    //FRAMCtl_configureWaitStateControl(FRAMCTL_ACCESS_TIME_CYCLES_1);
 
     // Initialise IO to reduce power.
     // P1.2 FD as input
@@ -396,9 +403,6 @@ tretcode init_state(tevent evt)
             CS_CLOCK_DIVIDER_1
     );
 
-    // Enable low power mode for REFO.
-    //CS_enableREFOLP();
-
     // Enable watchdog timer.
     wdog_kick();
 
@@ -469,38 +473,33 @@ tretcode init_waitmemon(tevent evt)
 
 tretcode init_ntag(tevent evt)
 {
-    tretcode rc;
+    tretcode rc = tr_ok;
     int nPRG;
 
-
+    // Enable Supply voltage supervisor
+    // This should be running in active mode,
+    // so a low battery voltage can cause a reset and
+    // disable further operation.
+    PMM_enableSVSH();
 
     //nt3h_init_wrongaddress();
     nt3h_check_address();
-
-    //memoff();
-    //__bis_SR_register(LPM3_bits + GIE);
 
     // Checks for an NFC text record.
     if (confignfc_check())
     {
         confignfc_readtext(); // Configure from text records.
+        rc = tr_newconfig;
     }
-
-    /* Initialise the NTAG. */
-    nt3h_init();
 
     /* Check nPRG. */
     nPRG = GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN5);
 
-    if (nPRG) {
-        rc = tr_ok;
-    } else {
+    if (!nPRG) {
         // Write programming mode NDEF text.
         writetxt(ndefmsg_progmode, sizeof(ndefmsg_progmode));
         rc = tr_prog;
     }
-
-
 
     return rc;
 }
@@ -535,10 +534,9 @@ tretcode init_progmode(tevent evt)
 }
 
 
-
 tretcode init_configcheck(tevent evt)
 {
-    tretcode rc = tr_fail;
+    tretcode rc;
 
     if (nvparams_allwritten()) {
         rc = tr_ok;
@@ -546,6 +544,9 @@ tretcode init_configcheck(tevent evt)
     else {
         // Write configuration failed NDEF text.
         writetxt(ndefmsg_noconfig, sizeof(ndefmsg_noconfig));
+
+        // Enter LPM3.5 to save power.
+        rc = tr_deepsleep;
     }
 
     return rc;
@@ -580,7 +581,7 @@ tretcode init_errorcheck(tevent evt)
     // Check for too many resets.
     if (resetsperloop > 10)
     {
-        // Go to LPM4. This prevents wearing out the EEPROM after repeated resets.
+        // Go to LPM3.5 This prevents wearing out the EEPROM after repeated resets.
         err = true; // More than 10 consecutive unintended resets before reaching the end of the circular buffer. Stop.
     }
 
@@ -590,45 +591,82 @@ tretcode init_errorcheck(tevent evt)
         err = true;
     }
 
+    /* Initialise the NTAG. */
+    nt3h_init();
+
+    /* Initialise minute counter to 0. */
+    fram_write_enable();
+    minutecounter = 0;
+    fram_write_disable();
+
+    /* Initialise the encoder. */
     enc_init(status, err, batv);
-    rc = (err) ? tr_fail : tr_ok;
+    rc = (err) ? tr_deepsleep : tr_ok;
+
 
     return rc;
 }
 
-tretcode init_rtc(tevent evt)
-{
-    // Enable Supply voltage supervisor
-    PMM_enableSVSH();
+tretcode init_wakeupcheck(tevent evt) {
+    tretcode rc = tr_por;
+    unsigned int samplingloop; // Indicates that the sampling loop has been entered.
 
+    // The next state will depends on whether this is
+    // a wakeup from LPM3.5 or a Power On Reset.
+    if (stat_rstcause_is_lpm5wu()) {
+        // Read samplingloop from BKMEM. This will be set if the
+        // MSP430 entered LPM3.5 as part of the sampling loop.
+        samplingloop = *(unsigned int *)BKMEM_BASE;
+
+        if (samplingloop == 1) {
+            // Return to the sampling loop
+            rc = tr_samplingloop;
+        }
+    }
+
+    // Now that BKMEM has been read, reset it.
+    *(unsigned int *)BKMEM_BASE = 0;
+
+    return rc;
+}
+
+tretcode init_rtc_slow(tevent evt)
+{
     // Configure RTC
-    // Interrupt and reset happen every 1024/32768 * 32 = 1 sec.
-    RTCMOD = 1920-1;
+    // Interrupt and reset happen every 1024/32768 * 32 * 60 * 30 = 30 minutes.
+    // This must be done before any transitions to the end_state.
+    // Otherwise the MCU can get stuck in the end_state.
+    RTCMOD = 57600-1;
     RTCCTL = RTCSS__XT1CLK | RTCSR |RTCPS__1024;
-    RTCCTL |= RTCIE;
+    RTCCTL |= RTCIE; // Enable RTC interrupts
 
     return tr_ok;
 }
 
-tretcode err_reqmemon(tevent evt)
+
+
+tretcode init_rtc_1min(tevent evt)
 {
-    /* An invalid state machine transition has been requested
-     * i.e. one that is not in the table. You should never reach here.
-     * If you do, a text message is written to the  */
-    /* Power up the I2C bus if it is not already on. */
-    return reqmemon(evt);
+    // Configure RTC
+    // Interrupt and reset happen every 1024/32768 * 32 * 60 = 1 minute.
+    // This must be done before any transitions to the end_state.
+    // Otherwise the MCU will get stuck in the end_state.
+    RTCMOD = 1920-1;
+    RTCCTL = RTCSS__XT1CLK | RTCSR |RTCPS__1024;
+    RTCCTL |= RTCIE; // Enable RTC interrupts
+
+    return tr_ok;
 }
 
-tretcode err_waitmemon(tevent evt)
-{
-    return waitmemon(evt);
-}
 
 tretcode err_msg(tevent evt)
 {
+    /* An invalid state machine transition has been requested
+     * i.e. one that is not in the table. You should never reach here.
+     * If you do, a text message is written to the NFC EEPROM.  */
     // Write configuration failed NDEF text.
     writetxt(ndefmsg_badtrns, sizeof(ndefmsg_badtrns));
-    return tr_ok;
+    return tr_deepsleep;
 }
 
 tretcode smpl_hdcreq(tevent evt)
@@ -676,33 +714,39 @@ tretcode smpl_hdcread(tevent evt)
         batv = enc_getbatv();
         batv_mv = batv_to_mv(batv);
         if (batv_mv < nvparams_getminvoltagemv()) {
-            enc_init(0, true, batv);    // Write an error message
-            rc = tr_fail;               // Drop into LPM4.
+            enc_init(0, true, batv);    // Write the low power error message
+
+            // Clear samplingloop. This prevents the sampling loop from being re-entered before
+            // the error-check routine is run again.
+            *(unsigned int *)BKMEM_BASE = 0;
+
+            rc = tr_lowbat;               // Drop into LPM3.5
         }
     }
 
-    /* Power down the MEM domain. */
-    memoff();
-
     return rc;
 }
-
-
 
 tretcode smpl_wait(tevent evt)
 {
     tretcode rc;
 
-    // Kick the watchdog.
-    wdog_kick();
+    if (nvparams_getsmplintmins()==0)
+    {
+        // Kick the watchdog.
+         wdog_kick();
 
-    if ((evt == evt_rtc) || (nvparams_getsmplintmins()==0))
-    {
-        rc = tr_timeout;
-    }
-    else
-    {
-        rc = tr_wait;
+        // Test mode. Wait 100ms before incrementing the minute counter.
+        start_timer(10*CP10MS);
+
+        // Do not enter LPM3.5
+        rc = tr_testmode;
+    } else {
+        // Set samplingloop=1 to indicate that LPM3.5 is about to be entered from the sampling loop.
+        *(unsigned int *)BKMEM_BASE = 1;
+
+        // Enter LPM3.5. This will trigger an LPM5 reset after 1 minute.
+        rc = tr_deepsleep;
     }
 
     return rc;
@@ -710,8 +754,7 @@ tretcode smpl_wait(tevent evt)
 
 tretcode smpl_checkcounter(tevent evt)
 {
-    tretcode rc = tr_fail;
-    static int minutecounter = 0;
+    tretcode rc;
 
     if (minutecounter == 0)
     {
@@ -721,16 +764,10 @@ tretcode smpl_checkcounter(tevent evt)
     {
         rc = tr_updatemin;
         enc_setelapsed(minutecounter);
-        // Check for a configuration text record.
-        if (confignfc_check())
-        {
-            PMMCTL0 = PMMPW | PMMSWPOR; // Reset if a text record has been found.
-        }
-
-        /* Power down peripherals on the I2C bus. */
-        memoff();
     }
 
+
+    fram_write_enable();
     if (minutecounter < nvparams_getsmplintmins()-1)
     {
         minutecounter++;
@@ -739,42 +776,49 @@ tretcode smpl_checkcounter(tevent evt)
     {
         minutecounter = 0;
     }
+    fram_write_disable();
+
 
     return rc;
 }
 
-tretcode rtc_reqmemon(tevent evt)
+tretcode tst_wait(tevent evt)
 {
-    return reqmemon(evt);
-}
+    tretcode rc = tr_wait;
 
-tretcode rtc_waitmemon(tevent evt)
-{
-    return waitmemon(evt);
+    if (evt == evt_timerfinished)
+    {
+        rc = tr_ok;
+    }
+
+    return rc;
 }
 
 tretcode end_state(tevent evt)
 {
-    // Turn peripheral power off.
-    memoff();
     /* Disable HDCint P4.2 rising edge interrupt. */
     P4IE = 0 ; // Disable interrupt on port 2 bit 3.
-    // Go to deep sleep mode.
-    WDTCTL = WDTPW | WDTHOLD;        // Hold the watchdog.
-    PMMCTL0_H = PMMPW_H;                // Open PMM Registers for write
-    PMMCTL0_L &= ~(SVSHE);              // Disable high-side SVS
-    PMMCTL0_L |= PMMREGOFF;             // and set PMMREGOFF
-    PMMCTL0_H = 0;                      // Lock PMM Registers
-    TB0CTL = MC_0;                   //turn off timer A
-    TB1CTL = MC_0;                   //turn off timer A
-    RTCCTL = 0;                      // Stop the RTC.
-    __delay_cycles(10000);
-    // Deep sleep.
-    __bis_SR_register(LPM4_bits | GIE);
+    /* Power down the MEM domain. */
+    memoff();
+    /* Stop timers. */
+    Timer_B_stop(TB0_BASE);
+    Timer_B_stop(TB1_BASE);
+    /* Hold the watchdog */
+    WDTCTL = WDTPW | WDTHOLD;
+    // Enter LPM3.5 mode with interrupts enabled. Note that this operation does
+    // not return. The LPM3.5 will exit through a RESET event, resulting in a
+    // re-start of the code.
+    PMMCTL0_H = PMMPW_H;                    // Open PMM Registers for write
+    // Disable high-side SVS in deep sleep, which consumes ~240nA.
+    // If the battery voltage is too low this will be apparent each minute when the system is active.
+    PMMCTL0_L &= ~(SVSHE);
+    // and set PMMREGOFF
+    PMMCTL0_L |= PMMREGOFF;
+    __bis_SR_register(LPM3_bits | GIE);
+    __no_operation();
+
     return tr_ok; // Never reached.
 }
-
-static tevent evt;
 
 void main(void)
 {
@@ -782,16 +826,12 @@ void main(void)
     tstate cur_state = ENTRY_STATE;
     tretcode rc;
     tretcode (* state_fun)(tevent);
+    tevent evt;
 
 
     while (1) {
         // Process events
-        if (rtcFlag)
-        {
-            rtcFlag = 0;
-            evt = evt_rtc;
-        }
-        else if (timerFlag)
+        if (timerFlag)
         {
             timerFlag = 0;
             evt = evt_timerfinished;
@@ -810,13 +850,11 @@ void main(void)
         rc = state_fun(evt);
         if (rc == tr_wait)
         {
-            // Sleep whilst waiting for an eventconf
+            // Sleep in LPM3 whilst waiting for the timer or the HDC2010 to assert it's interrupt output.
             __bis_SR_register(LPM3_bits + GIE);
         }
         cur_state = lookup_transitions(cur_state, rc);
-
     }
-
 }
 
 //******************************************************************************
@@ -875,8 +913,6 @@ void __attribute__ ((interrupt(RTC_VECTOR))) RTC_ISR (void)
     {
         case RTCIV_NONE : break;            // No interrupt pending
         case RTCIV_RTCIF:                   // RTC Overflow
-            rtcFlag = 1;
-            __bic_SR_register_on_exit(LPM3_bits); // Clear LPM bits upon ISR Exit
             break;
         default:          break;
     }

@@ -30,7 +30,7 @@
 #include <string.h>
 
 #define HW_VERSION    HT04
-#define FW_VERSION    1.2
+#define FW_VERSION    1.3
 
 #define    XSTR(V)        #V
 #define    STR(V)        XSTR(V)

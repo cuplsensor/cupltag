@@ -61,6 +61,10 @@ void stat_rdrstcause()
     }
 }
 
+int stat_rstcause_is_lpm5wu() {
+    return (rstcause & LPM5WU_BIT);
+}
+
 void stat_setclockfailure()
 {
     rstcause |= CLOCKFAIL_BIT;

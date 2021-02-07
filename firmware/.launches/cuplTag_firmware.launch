@@ -10,7 +10,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.MSP430FR2153.ccxml.TI MSP430 USB1/MSP430" value="cuplTag_firmware"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.MSP430FR2155.ccxml.TI MSP430 USB1/MSP430" value="cuplTag_firmware"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:cuplTag_firmware}"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.MSP430FR2155.ccxml.TI MSP430 USB1/MSP430" value="C:\Users\malco\Documents\Plotsensor\cupltag\firmware\Debug\cuplTag_firmware.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.MSP430FR2155.ccxml.TI MSP430 USB1/MSP430" value="C:\Users\malco\Documents\Plotsensor\cupltag\firmware\Release2\cuplTag_firmware.out"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/cuplTag_firmware"/>
 </listAttribute>
