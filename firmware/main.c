@@ -314,7 +314,7 @@ static void memoff()
 {
     // P4.2 EN as output low.
     GPIO_setOutputLowOnPin(
-            GPIO_PORT_P4,
+            GPIO_PORT_P3,
             GPIO_PIN2
     );
 
@@ -332,11 +332,11 @@ tretcode init_state(tevent evt)
     PMM_disableSVSH(); // Disable Supply Voltage Supervisor.
 
     // Initialise IO to reduce power.
-    // P1.2 FD as input
-    // P1.1 UART RX as input
-    // P4.2 HDC_INT as input
-    // P2.7 EN as output low
-    P1DIR = 0xBF; P2DIR = 0xFF; P3DIR = 0xDF; P4DIR = 0xFB;
+    // P1.1 HDC_INT as input
+    // P1.6 RX_BY_MCU as input
+    // P3.5 nPRG as input
+    // All other pins output low.
+    P1DIR = 0xBD; P2DIR = 0xFF; P3DIR = 0xDF; P4DIR = 0xFF;
     P5DIR = 0xFF; P6DIR = 0xFF; P7DIR = 0xFF; P8DIR = 0xFF;
     P1OUT = 0x00; P2OUT = 0x00; P3OUT = 0x00; P4OUT = 0x00;
     P5OUT = 0x00; P6OUT = 0x00; P7OUT = 0x00; P8OUT = 0x00;
@@ -424,20 +424,20 @@ tretcode init_state(tevent evt)
 static tretcode reqmemon(tevent evt)
 {
     /* Power up the I2C bus. */
-    // P4.3 HDC_INT as input
+    // P1.1 HDC_INT as input
     GPIO_setAsInputPinWithPullDownResistor(
-            GPIO_PORT_P4,
-            GPIO_PIN3
+            GPIO_PORT_P1,
+            GPIO_PIN1
     );
 
-    // P4.2 EN as output high
+    // P3.2 EN as output high
     GPIO_setAsOutputPin(
-            GPIO_PORT_P4,
+            GPIO_PORT_P3,
             GPIO_PIN2
     );
 
     GPIO_setOutputHighOnPin(
-            GPIO_PORT_P4,
+            GPIO_PORT_P3,
             GPIO_PIN2
     );
 
@@ -671,13 +671,13 @@ tretcode err_msg(tevent evt)
 
 tretcode smpl_hdcreq(tevent evt)
 {
-    /* Enable HDCint P4.3 rising edge interrupt. */
-    P4IFG &= ~BIT3; // Clear flag.
-    P4IES |= BIT3; // Falling edge detect.
+    /* Enable HDCint P1.1 rising edge interrupt. */
+    P1IFG &= ~BIT1; // Clear flag.
+    P1IES |= BIT1; // Falling edge detect.
 
     hdc2010_startconv();
 
-    GPIO_enableInterrupt(GPIO_PORT_P4, GPIO_PIN3);
+    GPIO_enableInterrupt(GPIO_PORT_P1, GPIO_PIN1);
 
     return tr_ok;
 }
@@ -700,8 +700,8 @@ tretcode smpl_hdcread(tevent evt)
     int temp, rh;
     int batv, batv_mv;
 
-    /* Disable HDCint P4.3 rising edge interrupt. */
-    GPIO_disableInterrupt(GPIO_PORT_P4, GPIO_PIN3);
+    /* Disable HDCint P1.1 rising edge interrupt. */
+    GPIO_disableInterrupt(GPIO_PORT_P1, GPIO_PIN1);
 
     // Read temperature and humidity from the sensor.
     hdc2010_read_temp(&temp, &rh);
@@ -883,18 +883,18 @@ void TIMER1_B0_ISR(void)
 //
 //******************************************************************************
 #if defined(__TI_COMPILER_VERSION__) || defined(__IAR_SYSTEMS_ICC__)
-#pragma vector=PORT4_VECTOR
-__interrupt void Port_4(void)
+#pragma vector=PORT1_VECTOR
+__interrupt void Port_1(void)
 #elif defined(__GNUC__)
 void __attribute__ ((interrupt(PORT2_VECTOR))) Port_2 (void)
 #else
 #error Compiler not supported!
 #endif
 {
-  P4IFG &= ~BIT3;                           // P4.3 IFG cleared
-  if ((P4IN & BIT3) == 0)
+  P1IFG &= ~BIT1;                           // P4.3 IFG cleared
+  if ((P1IN & BIT1) == 0)
   {
-      // P4.3 is low.
+      // P1.1 is low.
       hdcFlag = 1;
       __bic_SR_register_on_exit(LPM3_bits);     // Clear LPM bits upon ISR Exit
   }
