@@ -347,18 +347,6 @@ tretcode init_state(tevent evt)
     // to activate previously configured port settings
     PM5CTL0 &= ~LOCKLPM5;
 
-    // P3.2 EN as output high
-    GPIO_setAsOutputPin(
-            GPIO_PORT_P3,
-            GPIO_PIN3
-    );
-
-    GPIO_setOutputHighOnPin(
-            GPIO_PORT_P3,
-            GPIO_PIN3
-    );
-
-
     // Read the reset cause.
     stat_rdrstcause();
 
@@ -415,11 +403,6 @@ tretcode init_state(tevent evt)
             CS_CLOCK_DIVIDER_1
     );
 
-    GPIO_setOutputLowOnPin(
-                GPIO_PORT_P3,
-                GPIO_PIN3
-    );
-
     // Enable watchdog timer.
     wdog_kick();
 
@@ -434,14 +417,6 @@ tretcode init_state(tevent evt)
             GPIO_PORT_P1,
             GPIO_PIN6
     );
-
-    GPIO_setAsPeripheralModuleFunctionOutputPin(
-                GPIO_PORT_P1,
-                GPIO_PIN1,
-                GPIO_SECONDARY_MODULE_FUNCTION
-    );
-
-    while(1) {};
 
     return tr_ok;
 }
