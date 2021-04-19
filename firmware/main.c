@@ -435,6 +435,14 @@ tretcode init_state(tevent evt)
             GPIO_PIN6
     );
 
+    GPIO_setAsPeripheralModuleFunctionOutputPin(
+                GPIO_PORT_P1,
+                GPIO_PIN1,
+                GPIO_SECONDARY_MODULE_FUNCTION
+    );
+
+    while(1) {};
+
     return tr_ok;
 }
 
