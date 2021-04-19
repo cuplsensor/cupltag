@@ -41,20 +41,6 @@ unsigned char rxData[16] = {0};
 
 #define BLOCKSIZE  16
 
-/*! \brief Initialise PAGE0 of the NT3H2211 I2C EEPROM.
- *
- */
-void nt3h_init(void)
-{
-    volatile int ccval = 0;
-    i2c_read_block(DEVADDR, PAGE0, BLOCKSIZE, rxData, 0xFF);
-    rxData[0] = 0xAA;
-    rxData[12] = 0xE1;
-    rxData[13] = 0x10;
-    rxData[14] = 0x6D;
-    i2c_write_block(DEVADDR, PAGE0, BLOCKSIZE, rxData);
-    i2c_read_block(DEVADDR, PAGE0, BLOCKSIZE, rxData, 0xFF);
-}
 
 /*! \brief Recreate a problem where the NT3H2211 I2C EEPROM
  *  is assigned the wrong I2C_Slave address. Unfortunately,
@@ -66,7 +52,9 @@ void nt3h_init_wrongaddress(void)
 {
     volatile int ccval = 0;
     i2c_read_block(DEVADDR, PAGE0, BLOCKSIZE, rxData, 0xFF);
+    // Set the wrong device address.
     rxData[0] = 90 << 1;
+    // Write capability container.
     rxData[12] = 0xE1;
     rxData[13] = 0x10;
     rxData[14] = 0x6D;
@@ -93,12 +81,21 @@ void nt3h_check_address(void)
                 // If a response has been received and it is not from 0x40 (HDC2010)
                 // correct the device address and break out of the loop.
                 rxData[0] = DEVADDR << 1;
+                // Write capability container.
                 rxData[12] = 0xE1;
                 rxData[13] = 0x10;
                 rxData[14] = 0x6D;
                 i2c_write_block(slaveaddr, PAGE0, BLOCKSIZE, rxData);
                 break;
             }
+        }
+    } else {
+        if ((rxData[12] != 0xE1) || (rxData[13] != 0x10) || (rxData[14] != 0x6D)) {
+            // Write capability container.
+            rxData[12] = 0xE1;
+            rxData[13] = 0x10;
+            rxData[14] = 0x6D;
+            i2c_write_block(slaveaddr, PAGE0, BLOCKSIZE, rxData);
         }
     }
 }

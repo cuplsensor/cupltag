@@ -347,6 +347,18 @@ tretcode init_state(tevent evt)
     // to activate previously configured port settings
     PM5CTL0 &= ~LOCKLPM5;
 
+    // P3.2 EN as output high
+    GPIO_setAsOutputPin(
+            GPIO_PORT_P3,
+            GPIO_PIN3
+    );
+
+    GPIO_setOutputHighOnPin(
+            GPIO_PORT_P3,
+            GPIO_PIN3
+    );
+
+
     // Read the reset cause.
     stat_rdrstcause();
 
@@ -401,6 +413,11 @@ tretcode init_state(tevent evt)
             CS_MCLK,
             CS_DCOCLKDIV_SELECT,
             CS_CLOCK_DIVIDER_1
+    );
+
+    GPIO_setOutputLowOnPin(
+                GPIO_PORT_P3,
+                GPIO_PIN3
     );
 
     // Enable watchdog timer.
@@ -572,7 +589,7 @@ tretcode init_errorcheck(tevent evt)
     if (err == false)
     {
         // Clear the resets counter if the reset has been caused intentionally (e.g. by the user replacing the battery).
-        // The resets counter should only count unintended resets (e.g. due to brown out or the watchdog).
+        // The resets counter should only count unintended resets (e.g. due to svs or the watchdog).
         // Without this behaviour, the Tag could get stuck in an error state.
         nvparams_cresetsperloop();
         resetsperloop = 0;
@@ -590,9 +607,6 @@ tretcode init_errorcheck(tevent evt)
     {
         err = true;
     }
-
-    /* Initialise the NTAG. */
-    nt3h_init();
 
     /* Initialise minute counter to 0. */
     fram_write_enable();
@@ -648,7 +662,7 @@ tretcode init_rtc_slow(tevent evt)
 tretcode init_rtc_1min(tevent evt)
 {
     // Configure RTC
-    // Interrupt and reset happen every 1024/32768 * 32 * 60 = 1 minute.
+    // Interrupt and reset happen every 32768/1024 * 32 counts per second * 60 seconds = 1 minute.
     // This must be done before any transitions to the end_state.
     // Otherwise the MCU will get stuck in the end_state.
     RTCMOD = 1920-1;
@@ -796,8 +810,9 @@ tretcode tst_wait(tevent evt)
 
 tretcode end_state(tevent evt)
 {
-    /* Disable HDCint P4.2 rising edge interrupt. */
-    P4IE = 0 ; // Disable interrupt on port 2 bit 3.
+    /* Disable HDCint P1.1 rising edge interrupt. */
+    GPIO_disableInterrupt(GPIO_PORT_P1, GPIO_PIN1);
+    Timer_B_disableInterrupt(TB1_BASE);
     /* Power down the MEM domain. */
     memoff();
     /* Stop timers. */
