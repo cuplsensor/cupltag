@@ -1,0 +1,999 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<export version="D">
+  <design>
+    <source>C:\Users\malco\Documents\Plotsensor\cupltag\hardware\HT07\HT07.sch</source>
+    <date>21/04/2021 09:00:33</date>
+    <tool>Eeschema (5.1.5)-3</tool>
+    <sheet number="1" name="/" tstamps="/">
+      <title_block>
+        <title>CUPL TAG</title>
+        <company>COPYRIGHT Plotsensor Ltd. 2021</company>
+        <rev>2</rev>
+        <date>2021-04-19</date>
+        <source>HT07.sch</source>
+        <comment number="1" value="Designed by Malcolm Mackay"/>
+        <comment number="2" value="Licenced under CERN OHL-v2-S"/>
+        <comment number="3" value="CUPL®"/>
+        <comment number="4" value=""/>
+      </title_block>
+    </sheet>
+  </design>
+  <components>
+    <comp ref="U4">
+      <value>SIP32431DR3-T1GE3</value>
+      <footprint>CUPL_FP:SOT-363_SC-70-6</footprint>
+      <datasheet>http://www.farnell.com/datasheets/2049671.pdf?_ga=2.11166580.1949353041.1516051135-1652704786.1448397490</datasheet>
+      <fields>
+        <field name="MANF">VISHAY</field>
+        <field name="MANF#">SIP32431DR3-T1GE3</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2361509</field>
+      </fields>
+      <libsource lib="CUPL" part="SIP32431DR3-T1GE3" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DB00901</tstamp>
+    </comp>
+    <comp ref="R31">
+      <value>47K</value>
+      <footprint>CUPL_FP:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">PANASONIC</field>
+        <field name="MANF#">ERJ2RKF4702X</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2302806</field>
+      </fields>
+      <libsource lib="device" part="R" description="Resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B731ED4</tstamp>
+    </comp>
+    <comp ref="C4">
+      <value>22P</value>
+      <footprint>CUPL_FP:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">AVX</field>
+        <field name="MANF#">04025A220JAT2A</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">1327634</field>
+      </fields>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B731F56</tstamp>
+    </comp>
+    <comp ref="C3">
+      <value>22P</value>
+      <footprint>CUPL_FP:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">AVX</field>
+        <field name="MANF#">04025A220JAT2A</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">1327634</field>
+      </fields>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B731F4F</tstamp>
+    </comp>
+    <comp ref="Y1">
+      <value>32K768</value>
+      <footprint>CUPL_FP:Crystal_SMD_2012-2Pin_2.0x1.2mm_HandSoldering</footprint>
+      <datasheet>http://www.farnell.com/datasheets/1912628.pdf?_ga=2.198399151.1835204160.1515367470-1652704786.1448397490</datasheet>
+      <fields>
+        <field name="COST@100">£0.36530</field>
+        <field name="MANF">EPSON</field>
+        <field name="MANF#">FC-12M 32.7680KD-A3</field>
+        <field name="SUPPLIER">DIGIKEY</field>
+        <field name="SUPPLIER#">SER3673CT-ND</field>
+      </fields>
+      <libsource lib="CUPL" part="XTAL_32768HZ_3215" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B731F44</tstamp>
+    </comp>
+    <comp ref="C6">
+      <value>100N</value>
+      <footprint>CUPL_FP:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">YAGEO</field>
+        <field name="MANF#">CC0402KRX7R7BB104</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">9402047</field>
+      </fields>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B72DE8D</tstamp>
+    </comp>
+    <comp ref="C9">
+      <value>0P</value>
+      <footprint>CUPL_FP:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="FIT">NF</field>
+        <field name="MANF">AVX</field>
+        <field name="SUPPLIER">FARNELL</field>
+      </fields>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B72B8EE</tstamp>
+    </comp>
+    <comp ref="R2">
+      <value>10K</value>
+      <footprint>CUPL_FP:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">VISHAY</field>
+        <field name="MANF#">CRCW040210K0FKED</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">1469669</field>
+      </fields>
+      <libsource lib="device" part="R" description="Resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B72B8C1</tstamp>
+    </comp>
+    <comp ref="AE1">
+      <value>Antenna_Loop</value>
+      <footprint>CUPL_FP:Class_6_NXP_7loop_150u</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="device" part="Antenna_Loop" description="Loop antenna"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DBCFCEA</tstamp>
+    </comp>
+    <comp ref="R1">
+      <value>10K</value>
+      <footprint>CUPL_FP:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">VISHAY</field>
+        <field name="MANF#">CRCW040210K0FKED</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">1469669</field>
+      </fields>
+      <libsource lib="device" part="R" description="Resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B72B8AE</tstamp>
+    </comp>
+    <comp ref="U1">
+      <value>HDC2021</value>
+      <footprint>CUPL_FP:HDC2021</footprint>
+      <datasheet>https://www.ti.com/lit/ds/symlink/hdc2021.pdf</datasheet>
+      <fields>
+        <field name="MANF">TEXAS</field>
+        <field name="MANF#">HDC2021DEBT</field>
+        <field name="SUPPLIER">TEXAS</field>
+        <field name="SUPPLIER#">HDC2021DEBT</field>
+      </fields>
+      <libsource lib="CUPL" part="HDC2021" description="Low Power Humidity and Temperature Sensor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EA2A987</tstamp>
+    </comp>
+    <comp ref="LOGO2">
+      <value>CUPL</value>
+      <footprint>CUPL_FP:logo</footprint>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="CUPL" part="CUPL" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EB37317</tstamp>
+    </comp>
+    <comp ref="TP3">
+      <value>SDA</value>
+      <footprint>CUPL_FP:TestPoint_THTPad_D1.0mm_Drill0.5mm</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Connector" part="TestPoint_Alt" description="test point (alternative shape)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F4A714E</tstamp>
+    </comp>
+    <comp ref="TP2">
+      <value>SCL</value>
+      <footprint>CUPL_FP:TestPoint_THTPad_D1.0mm_Drill0.5mm</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Connector" part="TestPoint_Alt" description="test point (alternative shape)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F4A8A82</tstamp>
+    </comp>
+    <comp ref="TP1">
+      <value>MEM</value>
+      <footprint>CUPL_FP:TestPoint_THTPad_D1.0mm_Drill0.5mm</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Connector" part="TestPoint_Alt" description="test point (alternative shape)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5F4C94FD</tstamp>
+    </comp>
+    <comp ref="C10">
+      <value>18P</value>
+      <footprint>CUPL_FP:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">MURATA</field>
+        <field name="MANF#">04025A180FAT2A</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2781441</field>
+      </fields>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5FD38A7A</tstamp>
+    </comp>
+    <comp ref="U2">
+      <value>NT3H2111W0FTTJ</value>
+      <footprint>CUPL_FP:TSSOP-8_3x3mm_P0.65mm</footprint>
+      <datasheet>https://www.nxp.com/docs/en/data-sheet/NT3H2111_2211.pdf</datasheet>
+      <fields>
+        <field name="MANF">NXP</field>
+        <field name="MANF#">NT3H2111W0FTTJ</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2663150</field>
+      </fields>
+      <libsource lib="CUPL" part="NT3H2111" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5DEA96C3</tstamp>
+    </comp>
+    <comp ref="C8">
+      <value>100N</value>
+      <footprint>CUPL_FP:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">YAGEO</field>
+        <field name="MANF#">CC0402KRX7R7BB104</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">9402047</field>
+      </fields>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B72B8E1</tstamp>
+    </comp>
+    <comp ref="J30">
+      <value>Conn_02x04_Odd_Even</value>
+      <footprint>CUPL_FP:PinHeader_2x04_P2.54mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Connector_Generic" part="Conn_02x04_Odd_Even" description="Generic connector, double row, 02x04, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>60521E4D</tstamp>
+    </comp>
+    <comp ref="BT30">
+      <value>CR1220</value>
+      <footprint>CUPL_FP:MPD_BC501SM_CR1220</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="MANF">MPD</field>
+        <field name="MANF#">BC501SM</field>
+        <field name="SUPPLIER">DIGIKEY</field>
+        <field name="SUPPLIER#">BC501SM-TRCT-ND</field>
+      </fields>
+      <libsource lib="device" part="Battery_Cell" description="Single-cell battery"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>605C1351</tstamp>
+    </comp>
+    <comp ref="JP31">
+      <value>SolderJumper_2_Bridged_small</value>
+      <footprint>CUPL_FP:SolderJumper-2_Bridged_small</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Jumper" part="SolderJumper_2_Bridged" description="Solder Jumper, 2-pole, closed/bridged"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>605DF96E</tstamp>
+    </comp>
+    <comp ref="SW30">
+      <value>SW_Push</value>
+      <footprint>CUPL_FP:SW_SPST_EVQP2</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="MANF">PANASONIC</field>
+        <field name="MANF#">EVQP2402W</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2860944</field>
+      </fields>
+      <libsource lib="Switch" part="SW_Push" description="Push button switch, generic, two pins"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>606E5A2C</tstamp>
+    </comp>
+    <comp ref="R30">
+      <value>47K</value>
+      <footprint>CUPL_FP:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">PANASONIC</field>
+        <field name="MANF#">ERJ2RKF4702X</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2302806</field>
+      </fields>
+      <libsource lib="device" part="R" description="Resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>606EBA2B</tstamp>
+    </comp>
+    <comp ref="JP30">
+      <value>Jumper_2_Open</value>
+      <footprint>CUPL_FP:PinHeader_1x02_P2.54mm_Vertical</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Jumper" part="Jumper_2_Open" description="Jumper, 2-pole, open"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>606F6B42</tstamp>
+    </comp>
+    <comp ref="P1">
+      <value>Conn_01x01_MountingPin</value>
+      <footprint>CUPL_FP:MountingHole_2.2mm_M2</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>60260B80</tstamp>
+    </comp>
+    <comp ref="P2">
+      <value>Conn_01x01_MountingPin</value>
+      <footprint>CUPL_FP:MountingHole_2.2mm_M2</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>60263401</tstamp>
+    </comp>
+    <comp ref="P3">
+      <value>Conn_01x01_MountingPin</value>
+      <footprint>CUPL_FP:MountingHole_2.2mm_M2</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>60263776</tstamp>
+    </comp>
+    <comp ref="P4">
+      <value>Conn_01x01_MountingPin</value>
+      <footprint>CUPL_FP:MountingHole_2.2mm_M2</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="FIT">NF</field>
+      </fields>
+      <libsource lib="Mechanical" part="MountingHole" description="Mounting Hole without connection"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>60263BBE</tstamp>
+    </comp>
+    <comp ref="C7">
+      <value>10U</value>
+      <footprint>CUPL_FP:C_0603_1608Metric</footprint>
+      <fields>
+        <field name="COST@100">£0.115</field>
+        <field name="MANF">AVX</field>
+        <field name="MANF#">06036D106MAT2A</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">1833804</field>
+      </fields>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5AA5B254</tstamp>
+    </comp>
+    <comp ref="C2">
+      <value>100N</value>
+      <footprint>CUPL_FP:C_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">YAGEO</field>
+        <field name="MANF#">CC0402KRX7R7BB104</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">9402047</field>
+      </fields>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B731F06</tstamp>
+    </comp>
+    <comp ref="C1">
+      <value>1N</value>
+      <footprint>CUPL_FP:C_0402_1005Metric</footprint>
+      <libsource lib="device" part="C" description="Unpolarized capacitor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5B731EE1</tstamp>
+    </comp>
+    <comp ref="D1">
+      <value>D_Schottky</value>
+      <footprint>CUPL_FP:D_SOD-523</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="MANF">ROHM</field>
+        <field name="MANF#">RB520SM-40FHT2R</field>
+        <field name="SUPPLIER">MOUSER</field>
+        <field name="SUPPLIER#">755-RB520SM-40FHT2R</field>
+      </fields>
+      <libsource lib="device" part="D_Schottky" description="Schottky diode"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>605047C1</tstamp>
+    </comp>
+    <comp ref="R3">
+      <value>100K</value>
+      <footprint>CUPL_FP:R_0402_1005Metric</footprint>
+      <fields>
+        <field name="MANF">BOURNS</field>
+        <field name="MANF#">CR0402-FX-1003GLF</field>
+        <field name="SUPPLIER">MOUSER</field>
+        <field name="SUPPLIER#">652-CR0402FX-1003GLF</field>
+      </fields>
+      <libsource lib="device" part="R" description="Resistor"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>6071CD30</tstamp>
+    </comp>
+    <comp ref="U3">
+      <value>MSP430FR2155TDBT</value>
+      <footprint>CUPL_FP:TSSOP-38_4.4x9.7mm_P0.5mm</footprint>
+      <datasheet>http://www.ti.com/lit/ds/symlink/msp430fr2155.pdf</datasheet>
+      <fields>
+        <field name="MANF">TEXAS</field>
+        <field name="MANF#">MSP430FR2155TDBT</field>
+        <field name="SUPPLIER">MOUSER</field>
+        <field name="SUPPLIER#">595-MSP430FR2155TDBTR</field>
+      </fields>
+      <libsource lib="CUPL" part="MSP430FR2155TDBT" description=""/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>6044A1EE</tstamp>
+    </comp>
+    <comp ref="LOGO1">
+      <value>Logo_Open_Hardware_Small</value>
+      <footprint>CUPL_FP:OSHW-Logo_5.7x6mm_SilkScreen</footprint>
+      <datasheet>~</datasheet>
+      <libsource lib="Graphic" part="Logo_Open_Hardware_Small" description="Open Hardware logo, small"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>5EACC97C</tstamp>
+    </comp>
+  </components>
+  <libparts>
+    <libpart lib="CUPL" part="CUPL">
+      <fields>
+        <field name="Reference">LOGO</field>
+        <field name="Value">CUPL</field>
+        <field name="Footprint">OSHW:logo</field>
+      </fields>
+    </libpart>
+    <libpart lib="CUPL" part="HDC2021">
+      <description>Low Power Humidity and Temperature Sensor</description>
+      <docs>https://www.ti.com/lit/ds/symlink/hdc2021.pdf</docs>
+      <footprints>
+        <fp>Package*SON:Texas*PWSON*N6*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">HDC2021</field>
+        <field name="Footprint">Package_SON:Texas_PWSON-N6</field>
+        <field name="MANF">TEXAS</field>
+        <field name="MANF#">PHDC2021DEBT</field>
+        <field name="SUPPLIER">TEXAS</field>
+        <field name="SUPPLIER#">PHDC2021DEBT</field>
+      </fields>
+      <pins>
+        <pin num="1" name="SDA" type="BiDi"/>
+        <pin num="2" name="GND" type="power_in"/>
+        <pin num="3" name="ADDR" type="input"/>
+        <pin num="4" name="DRDY" type="output"/>
+        <pin num="5" name="VDD" type="power_in"/>
+        <pin num="6" name="SCL" type="input"/>
+        <pin num="7" name="PAD" type="unspc"/>
+      </pins>
+    </libpart>
+    <libpart lib="CUPL" part="MSP430FR2155TDBT">
+      <fields>
+        <field name="Reference">U?</field>
+        <field name="Value">MSP430FR2155TDBT</field>
+        <field name="Footprint">Package_SO:TSSOP-38_4.4x9.7mm_P0.5mm</field>
+        <field name="Datasheet">http://www.ti.com/lit/ds/symlink/msp430fr2155.pdf</field>
+        <field name="MANF">TEXAS</field>
+        <field name="MANF#">MSP430FR2155TDBT</field>
+        <field name="SUPPLIER">MOUSER</field>
+        <field name="SUPPLIER#">595-MSP430FR2155TDBTR</field>
+      </fields>
+      <pins>
+        <pin num="1" name="P3.2" type="BiDi"/>
+        <pin num="2" name="P3.1" type="BiDi"/>
+        <pin num="3" name="P3.0/MCLK" type="BiDi"/>
+        <pin num="4" name="P1.3/UCB0SOMI/UCB0SCL" type="BiDi"/>
+        <pin num="5" name="P1.2/UCB0SIMO/UCB0SDA" type="BiDi"/>
+        <pin num="6" name="P1.1/UCB0CLK/ACLK" type="BiDi"/>
+        <pin num="7" name="P1.0/UCB0STE/SMCLK" type="BiDi"/>
+        <pin num="8" name="TEST/SBWTCK" type="BiDi"/>
+        <pin num="9" name="~RST~/NMI/SBWTDIO" type="BiDi"/>
+        <pin num="10" name="DVCC" type="power_in"/>
+        <pin num="11" name="DVSS" type="power_in"/>
+        <pin num="12" name="P2.7/TB0CLK/XIN" type="BiDi"/>
+        <pin num="13" name="P2.6/MCLK/XOUT" type="BiDi"/>
+        <pin num="14" name="P2.5/COMP1.0" type="BiDi"/>
+        <pin num="15" name="P2.4/COMP1.1" type="BiDi"/>
+        <pin num="16" name="P4.7/UCB1SCL" type="BiDi"/>
+        <pin num="17" name="P4.6/UCB1SDA" type="BiDi"/>
+        <pin num="18" name="P4.5/UCB1CLK" type="BiDi"/>
+        <pin num="19" name="P4.4/UCB1STE" type="BiDi"/>
+        <pin num="20" name="P4.3/UCA1TXD/UCA1SIMO" type="BiDi"/>
+        <pin num="21" name="P4.2/UCA1RXD/UCA1SOMI" type="BiDi"/>
+        <pin num="22" name="P4.1/UCA1CLK" type="BiDi"/>
+        <pin num="23" name="P4.0/UCA1STE" type="BiDi"/>
+        <pin num="24" name="P2.3/TB1TRG" type="BiDi"/>
+        <pin num="25" name="P2.2/TB1CLK" type="BiDi"/>
+        <pin num="26" name="P2.1/TB1.2" type="BiDi"/>
+        <pin num="27" name="P2.0/TB1.1" type="BiDi"/>
+        <pin num="28" name="P1.7/UCA0TXD/UCA0SIMO/TB0.2" type="BiDi"/>
+        <pin num="29" name="P1.6/UCA0RXD/UCA0SOMI/TB0.1" type="BiDi"/>
+        <pin num="30" name="P1.5/UCA0CLK" type="BiDi"/>
+        <pin num="31" name="P1.4/UCA0STE" type="BiDi"/>
+        <pin num="32" name="P3.7" type="BiDi"/>
+        <pin num="33" name="P3.6" type="BiDi"/>
+        <pin num="34" name="P3.5" type="BiDi"/>
+        <pin num="35" name="P3.4/SMCLK" type="BiDi"/>
+        <pin num="36" name="P5.1/TB2.2" type="BiDi"/>
+        <pin num="37" name="P5.0/TB2.1" type="BiDi"/>
+        <pin num="38" name="P3.3" type="BiDi"/>
+      </pins>
+    </libpart>
+    <libpart lib="CUPL" part="NT3H2111">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">NT3H2111</field>
+        <field name="Footprint">Housings_SSOP:TSSOP-8_3x3mm_Pitch0.65mm</field>
+        <field name="Datasheet">https://www.nxp.com/docs/en/data-sheet/NT3H2111_2211.pdf</field>
+        <field name="MANF">NXP</field>
+        <field name="MANF#">NT3H2111W0FTT</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2663150</field>
+      </fields>
+      <pins>
+        <pin num="1" name="LA" type="BiDi"/>
+        <pin num="2" name="VSS" type="power_in"/>
+        <pin num="3" name="SCL" type="openCol"/>
+        <pin num="4" name="FD" type="output"/>
+        <pin num="5" name="SDA" type="openCol"/>
+        <pin num="6" name="VCC" type="power_in"/>
+        <pin num="7" name="VOUT" type="power_out"/>
+        <pin num="8" name="LB" type="BiDi"/>
+      </pins>
+    </libpart>
+    <libpart lib="CUPL" part="SIP32431DR3-T1GE3">
+      <fields>
+        <field name="Reference">U</field>
+        <field name="Value">SIP32431DR3-T1GE3</field>
+        <field name="Footprint">TO_SOT_Packages_SMD:SOT-363_SC-70-6_Handsoldering</field>
+        <field name="Datasheet">http://www.farnell.com/datasheets/2049671.pdf?_ga=2.11166580.1949353041.1516051135-1652704786.1448397490</field>
+        <field name="MANF">VISHAY</field>
+        <field name="MANF#">SIP32431DR3-T1GE3</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2361509</field>
+      </fields>
+      <pins>
+        <pin num="1" name="OUT" type="output"/>
+        <pin num="2" name="GND" type="passive"/>
+        <pin num="3" name="ON/OFF" type="input"/>
+        <pin num="4" name="IN" type="input"/>
+        <pin num="5" name="GND" type="passive"/>
+        <pin num="6" name="N/C" type="NotConnected"/>
+      </pins>
+    </libpart>
+    <libpart lib="CUPL" part="XTAL_32768HZ_3215">
+      <footprints>
+        <fp>Crystal_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">Y</field>
+        <field name="Value">XTAL_32768HZ_3215</field>
+        <field name="Footprint">Crystals:Crystal_SMD_G8-2pin_3.2x1.5mm</field>
+        <field name="Datasheet">http://www.farnell.com/datasheets/1912628.pdf?_ga=2.198399151.1835204160.1515367470-1652704786.1448397490</field>
+        <field name="MANF">ABRACON</field>
+        <field name="MANF#">ABS07-32.768KHZ-T</field>
+        <field name="SUPPLIER">FARNELL</field>
+        <field name="SUPPLIER#">2101347</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector" part="TestPoint_Alt">
+      <description>test point (alternative shape)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Pin*</fp>
+        <fp>Test*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">TP</field>
+        <field name="Value">TestPoint_Alt</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Connector_Generic" part="Conn_02x04_Odd_Even">
+      <description>Generic connector, double row, 02x04, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>Connector*:*_2x??_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">J</field>
+        <field name="Value">Conn_02x04_Odd_Even</field>
+      </fields>
+      <pins>
+        <pin num="1" name="Pin_1" type="passive"/>
+        <pin num="2" name="Pin_2" type="passive"/>
+        <pin num="3" name="Pin_3" type="passive"/>
+        <pin num="4" name="Pin_4" type="passive"/>
+        <pin num="5" name="Pin_5" type="passive"/>
+        <pin num="6" name="Pin_6" type="passive"/>
+        <pin num="7" name="Pin_7" type="passive"/>
+        <pin num="8" name="Pin_8" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Graphic" part="Logo_Open_Hardware_Small">
+      <description>Open Hardware logo, small</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">#LOGO</field>
+        <field name="Value">Logo_Open_Hardware_Small</field>
+      </fields>
+    </libpart>
+    <libpart lib="Jumper" part="Jumper_2_Open">
+      <description>Jumper, 2-pole, open</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>SolderJumper*Open*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">Jumper_2_Open</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="B" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Jumper" part="SolderJumper_2_Bridged">
+      <description>Solder Jumper, 2-pole, closed/bridged</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>SolderJumper*Bridged*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">JP</field>
+        <field name="Value">SolderJumper_2_Bridged</field>
+      </fields>
+      <pins>
+        <pin num="1" name="A" type="passive"/>
+        <pin num="2" name="B" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="Mechanical" part="MountingHole">
+      <description>Mounting Hole without connection</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>MountingHole*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">H</field>
+        <field name="Value">MountingHole</field>
+      </fields>
+    </libpart>
+    <libpart lib="Switch" part="SW_Push">
+      <description>Push button switch, generic, two pins</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">SW</field>
+        <field name="Value">SW_Push</field>
+      </fields>
+      <pins>
+        <pin num="1" name="1" type="passive"/>
+        <pin num="2" name="2" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="Antenna_Loop">
+      <description>Loop antenna</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">AE</field>
+        <field name="Value">Antenna_Loop</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="input"/>
+        <pin num="2" name="~" type="input"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="Battery_Cell">
+      <description>Single-cell battery</description>
+      <docs>~</docs>
+      <fields>
+        <field name="Reference">BT</field>
+        <field name="Value">Battery_Cell</field>
+      </fields>
+      <pins>
+        <pin num="1" name="+" type="passive"/>
+        <pin num="2" name="-" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="C">
+      <description>Unpolarized capacitor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>C_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">C</field>
+        <field name="Value">C</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="D_Schottky">
+      <description>Schottky diode</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>TO-???*</fp>
+        <fp>*_Diode_*</fp>
+        <fp>*SingleDiode*</fp>
+        <fp>D_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">D</field>
+        <field name="Value">D_Schottky</field>
+      </fields>
+      <pins>
+        <pin num="1" name="K" type="passive"/>
+        <pin num="2" name="A" type="passive"/>
+      </pins>
+    </libpart>
+    <libpart lib="device" part="R">
+      <description>Resistor</description>
+      <docs>~</docs>
+      <footprints>
+        <fp>R_*</fp>
+      </footprints>
+      <fields>
+        <field name="Reference">R</field>
+        <field name="Value">R</field>
+      </fields>
+      <pins>
+        <pin num="1" name="~" type="passive"/>
+        <pin num="2" name="~" type="passive"/>
+      </pins>
+    </libpart>
+  </libparts>
+  <libraries>
+    <library logical="CUPL">
+      <uri>C:\Users\malco\Documents\Plotsensor\cupltag\hardware\HT07/../CUPL.lib</uri>
+    </library>
+    <library logical="Connector">
+      <uri>C:\Program Files (x86)\KiCad\share\kicad\library/Connector.lib</uri>
+    </library>
+    <library logical="Connector_Generic">
+      <uri>C:\Program Files (x86)\KiCad\share\kicad\library/Connector_Generic.lib</uri>
+    </library>
+    <library logical="Graphic">
+      <uri>C:\Program Files (x86)\KiCad\share\kicad\library/Graphic.lib</uri>
+    </library>
+    <library logical="Jumper">
+      <uri>C:\Program Files (x86)\KiCad\share\kicad\library/Jumper.lib</uri>
+    </library>
+    <library logical="Mechanical">
+      <uri>C:\Program Files (x86)\KiCad\share\kicad\library/Mechanical.lib</uri>
+    </library>
+    <library logical="Switch">
+      <uri>C:\Program Files (x86)\KiCad\share\kicad\library/Switch.lib</uri>
+    </library>
+    <library logical="device">
+      <uri>C:\Program Files (x86)\KiCad\share\kicad\library/device.lib</uri>
+    </library>
+  </libraries>
+  <nets>
+    <net code="1" name="GND">
+      <node ref="J30" pin="3"/>
+      <node ref="JP30" pin="1"/>
+      <node ref="U4" pin="5"/>
+      <node ref="U4" pin="2"/>
+      <node ref="J30" pin="5"/>
+      <node ref="C4" pin="2"/>
+      <node ref="U3" pin="11"/>
+      <node ref="R3" pin="2"/>
+      <node ref="C3" pin="2"/>
+      <node ref="SW30" pin="1"/>
+      <node ref="C6" pin="2"/>
+      <node ref="C8" pin="2"/>
+      <node ref="C1" pin="2"/>
+      <node ref="U1" pin="7"/>
+      <node ref="U1" pin="3"/>
+      <node ref="JP31" pin="2"/>
+      <node ref="C7" pin="2"/>
+      <node ref="U1" pin="2"/>
+      <node ref="U2" pin="2"/>
+      <node ref="C2" pin="2"/>
+    </net>
+    <net code="2" name="/~PRG~">
+      <node ref="JP30" pin="2"/>
+      <node ref="U3" pin="34"/>
+      <node ref="J30" pin="8"/>
+      <node ref="R30" pin="2"/>
+    </net>
+    <net code="3" name="VDD">
+      <node ref="D1" pin="1"/>
+      <node ref="U3" pin="10"/>
+      <node ref="C7" pin="1"/>
+      <node ref="R31" pin="1"/>
+      <node ref="U4" pin="4"/>
+      <node ref="R30" pin="1"/>
+      <node ref="C2" pin="1"/>
+      <node ref="J30" pin="7"/>
+    </net>
+    <net code="4" name="Net-(BT30-Pad2)">
+      <node ref="JP31" pin="1"/>
+      <node ref="BT30" pin="2"/>
+    </net>
+    <net code="5" name="Net-(BT30-Pad1)">
+      <node ref="BT30" pin="1"/>
+      <node ref="D1" pin="2"/>
+    </net>
+    <net code="6" name="Net-(U3-Pad33)">
+      <node ref="U3" pin="33"/>
+    </net>
+    <net code="7" name="Net-(U3-Pad7)">
+      <node ref="U3" pin="7"/>
+    </net>
+    <net code="8" name="Net-(U3-Pad38)">
+      <node ref="U3" pin="38"/>
+    </net>
+    <net code="9" name="Net-(U3-Pad37)">
+      <node ref="U3" pin="37"/>
+    </net>
+    <net code="10" name="Net-(U3-Pad36)">
+      <node ref="U3" pin="36"/>
+    </net>
+    <net code="11" name="Net-(U3-Pad35)">
+      <node ref="U3" pin="35"/>
+    </net>
+    <net code="12" name="Net-(U3-Pad32)">
+      <node ref="U3" pin="32"/>
+    </net>
+    <net code="13" name="Net-(U3-Pad31)">
+      <node ref="U3" pin="31"/>
+    </net>
+    <net code="14" name="Net-(U3-Pad30)">
+      <node ref="U3" pin="30"/>
+    </net>
+    <net code="15" name="Net-(U3-Pad3)">
+      <node ref="U3" pin="3"/>
+    </net>
+    <net code="16" name="Net-(U3-Pad27)">
+      <node ref="U3" pin="27"/>
+    </net>
+    <net code="17" name="Net-(U3-Pad26)">
+      <node ref="U3" pin="26"/>
+    </net>
+    <net code="18" name="Net-(U3-Pad25)">
+      <node ref="U3" pin="25"/>
+    </net>
+    <net code="19" name="Net-(U3-Pad24)">
+      <node ref="U3" pin="24"/>
+    </net>
+    <net code="20" name="Net-(U3-Pad2)">
+      <node ref="U3" pin="2"/>
+    </net>
+    <net code="21" name="Net-(U3-Pad16)">
+      <node ref="U3" pin="16"/>
+    </net>
+    <net code="22" name="Net-(U3-Pad17)">
+      <node ref="U3" pin="17"/>
+    </net>
+    <net code="23" name="Net-(U3-Pad18)">
+      <node ref="U3" pin="18"/>
+    </net>
+    <net code="24" name="Net-(U3-Pad19)">
+      <node ref="U3" pin="19"/>
+    </net>
+    <net code="25" name="Net-(U3-Pad20)">
+      <node ref="U3" pin="20"/>
+    </net>
+    <net code="26" name="Net-(U3-Pad21)">
+      <node ref="U3" pin="21"/>
+    </net>
+    <net code="27" name="Net-(U3-Pad22)">
+      <node ref="U3" pin="22"/>
+    </net>
+    <net code="28" name="Net-(U3-Pad23)">
+      <node ref="U3" pin="23"/>
+    </net>
+    <net code="29" name="Net-(U3-Pad15)">
+      <node ref="U3" pin="15"/>
+    </net>
+    <net code="30" name="Net-(U3-Pad14)">
+      <node ref="U3" pin="14"/>
+    </net>
+    <net code="31" name="VMEM">
+      <node ref="U1" pin="5"/>
+      <node ref="R1" pin="2"/>
+      <node ref="C6" pin="1"/>
+      <node ref="U4" pin="1"/>
+      <node ref="U2" pin="6"/>
+      <node ref="C8" pin="1"/>
+      <node ref="TP1" pin="1"/>
+      <node ref="R2" pin="2"/>
+    </net>
+    <net code="32" name="Net-(C3-Pad1)">
+      <node ref="U3" pin="12"/>
+      <node ref="C3" pin="1"/>
+      <node ref="Y1" pin="2"/>
+    </net>
+    <net code="33" name="Net-(C4-Pad1)">
+      <node ref="U3" pin="13"/>
+      <node ref="C4" pin="1"/>
+      <node ref="Y1" pin="1"/>
+    </net>
+    <net code="34" name="Net-(AE1-Pad1)">
+      <node ref="U2" pin="1"/>
+      <node ref="AE1" pin="1"/>
+      <node ref="C9" pin="2"/>
+      <node ref="C10" pin="2"/>
+    </net>
+    <net code="35" name="Net-(U2-Pad7)">
+      <node ref="U2" pin="7"/>
+    </net>
+    <net code="36" name="Net-(U2-Pad4)">
+      <node ref="U2" pin="4"/>
+    </net>
+    <net code="37" name="Net-(AE1-Pad2)">
+      <node ref="AE1" pin="2"/>
+      <node ref="C9" pin="1"/>
+      <node ref="U2" pin="8"/>
+      <node ref="C10" pin="1"/>
+    </net>
+    <net code="38" name="Net-(U4-Pad6)">
+      <node ref="U4" pin="6"/>
+    </net>
+    <net code="39" name="/RX_BY_MCU">
+      <node ref="U3" pin="29"/>
+      <node ref="J30" pin="2"/>
+    </net>
+    <net code="40" name="/TX_BY_MCU">
+      <node ref="J30" pin="1"/>
+      <node ref="U3" pin="28"/>
+    </net>
+    <net code="41" name="/TST">
+      <node ref="J30" pin="4"/>
+      <node ref="U3" pin="8"/>
+    </net>
+    <net code="42" name="/~RST~">
+      <node ref="U3" pin="9"/>
+      <node ref="SW30" pin="2"/>
+      <node ref="J30" pin="6"/>
+      <node ref="R31" pin="2"/>
+      <node ref="C1" pin="1"/>
+    </net>
+    <net code="43" name="/SDA">
+      <node ref="U1" pin="1"/>
+      <node ref="R1" pin="1"/>
+      <node ref="U2" pin="5"/>
+      <node ref="U3" pin="5"/>
+      <node ref="TP3" pin="1"/>
+    </net>
+    <net code="44" name="/DRDY">
+      <node ref="U1" pin="4"/>
+      <node ref="U3" pin="6"/>
+    </net>
+    <net code="45" name="/SCL">
+      <node ref="U2" pin="3"/>
+      <node ref="U3" pin="4"/>
+      <node ref="U1" pin="6"/>
+      <node ref="R2" pin="1"/>
+      <node ref="TP2" pin="1"/>
+    </net>
+    <net code="46" name="/VMEM_ON">
+      <node ref="U4" pin="3"/>
+      <node ref="U3" pin="1"/>
+      <node ref="R3" pin="1"/>
+    </net>
+  </nets>
+</export>
