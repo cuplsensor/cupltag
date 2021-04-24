@@ -65,11 +65,14 @@ void nt3h_init_wrongaddress(void)
  *  it is expected to be. If it is not, write to the address
  *  field to change its I2C address to DEVADDR. This means all
  *  subsequent transactions will work.
+ *  Returns 1 if the Capability Container is not as expected.
+ *  This can happen from the factory of if a text record has been written to the tag for configuration.
  */
-void nt3h_check_address(void)
+int nt3h_check_address(void)
 {
     int success = 0;
     int slaveaddr;
+    int updatecc = 0;
     i2c_init();
     success = i2c_read_block(DEVADDR, 0, BLOCKSIZE, rxData, 0xFF);
     if (success < 0) {
@@ -91,13 +94,19 @@ void nt3h_check_address(void)
         }
     } else {
         if ((rxData[12] != 0xE1) || (rxData[13] != 0x10) || (rxData[14] != 0x6D)) {
-            // Write capability container.
-            rxData[12] = 0xE1;
-            rxData[13] = 0x10;
-            rxData[14] = 0x6D;
-            i2c_write_block(slaveaddr, PAGE0, BLOCKSIZE, rxData);
+            updatecc = 1;
         }
     }
+
+    return updatecc;
+}
+
+void nt3h_update_cc(void) {
+    i2c_read_block(DEVADDR, 0, BLOCKSIZE, rxData, 0xFF);
+    rxData[12] = 0xE1;
+    rxData[13] = 0x10;
+    rxData[14] = 0x6D;
+    i2c_write_block(DEVADDR, PAGE0, BLOCKSIZE, rxData);
 }
 
 /*! \brief Write a 16-byte block of the NT3H2211 I2C EEPROM.

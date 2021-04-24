@@ -119,6 +119,7 @@ typedef enum state_codes {
     sc_init_configcheck,
     sc_init_errorcheck,
     sc_init_wakeupcheck,
+    sc_init_batvwait,
     sc_init_rtc_slow,
     sc_init_rtc_1min,
     sc_smpl_checkcounter,
@@ -126,7 +127,6 @@ typedef enum state_codes {
     sc_smpl_hdcwait,
     sc_smpl_hdcread,
     sc_smpl_wait,
-    sc_tst_wait,
     sc_err_msg,
     sc_end
 } tstate;
@@ -140,7 +140,6 @@ typedef enum ret_codes {
     tr_deepsleep,
     tr_lowbat,
     tr_fail,
-    tr_testmode,
     tr_samplingloop,
     tr_por,
     tr_wait
@@ -161,6 +160,7 @@ tretcode init_progmode(tevent);
 tretcode init_configcheck(tevent);
 tretcode init_errorcheck(tevent);
 tretcode init_wakeupcheck(tevent);
+tretcode init_batvwait(tevent);
 tretcode init_rtc_slow(tevent);
 tretcode init_rtc_1min(tevent);
 tretcode smpl_checkcounter(tevent);
@@ -168,7 +168,6 @@ tretcode smpl_hdcreq(tevent);
 tretcode smpl_hdcwait(tevent);
 tretcode smpl_hdcread(tevent);
 tretcode smpl_wait(tevent);
-tretcode tst_wait(tevent);
 tretcode err_msg(tevent);
 tretcode end_state(tevent);
 
@@ -182,6 +181,7 @@ tretcode (* state_fcns[])(tevent) = {
                           init_configcheck,
                           init_errorcheck,
                           init_wakeupcheck,
+                          init_batvwait,
                           init_rtc_slow,
                           init_rtc_1min,
                           smpl_checkcounter,
@@ -189,7 +189,6 @@ tretcode (* state_fcns[])(tevent) = {
                           smpl_hdcwait,
                           smpl_hdcread,
                           smpl_wait,
-                          tst_wait,
                           err_msg,
                           end_state
 };
@@ -220,7 +219,10 @@ struct transition state_transitions[] = {
                                          {sc_init_wakeupcheck,  tr_por,           sc_init_rtc_slow},
                                          {sc_init_wakeupcheck,  tr_samplingloop,  sc_smpl_checkcounter},
 
-                                         {sc_init_rtc_slow,  tr_ok,   sc_init_configcheck},
+                                         {sc_init_rtc_slow,  tr_ok,     sc_init_batvwait},
+
+                                         {sc_init_batvwait,  tr_ok,     sc_init_configcheck},
+                                         {sc_init_batvwait,  tr_wait,   sc_init_batvwait},
 
                                          {sc_init_configcheck,  tr_ok,          sc_init_errorcheck},
                                          {sc_init_configcheck,  tr_deepsleep,   sc_end},
@@ -241,11 +243,7 @@ struct transition state_transitions[] = {
                                          {sc_smpl_hdcread,  tr_ok,      sc_smpl_wait},
                                          {sc_smpl_hdcread,  tr_lowbat,  sc_end},
 
-                                         {sc_smpl_wait,     tr_testmode,    sc_tst_wait},
                                          {sc_smpl_wait,     tr_deepsleep,   sc_end},
-
-                                         {sc_tst_wait, tr_ok,     sc_smpl_checkcounter},
-                                         {sc_tst_wait, tr_wait,   sc_tst_wait},
 
                                          {sc_err_msg,  tr_deepsleep,     sc_end}
                                          
@@ -475,6 +473,7 @@ tretcode init_ntag(tevent evt)
 {
     tretcode rc = tr_ok;
     int nPRG;
+    int updatecc;
 
     // Enable Supply voltage supervisor
     // This should be running in active mode,
@@ -483,13 +482,18 @@ tretcode init_ntag(tevent evt)
     PMM_enableSVSH();
 
     //nt3h_init_wrongaddress();
-    nt3h_check_address();
+    updatecc = nt3h_check_address();
 
     // Checks for an NFC text record.
     if (confignfc_check())
     {
         confignfc_readtext(); // Configure from text records.
         rc = tr_newconfig;
+    }
+
+    // Write the capability container if needed.
+    if (updatecc) {
+        nt3h_update_cc();
     }
 
     /* Check nPRG. */
@@ -637,7 +641,25 @@ tretcode init_rtc_slow(tevent evt)
     RTCCTL = RTCSS__XT1CLK | RTCSR |RTCPS__1024;
     RTCCTL |= RTCIE; // Enable RTC interrupts
 
+    // Pause for the battery voltage to stabilise.
+    // If this is not done, the battery can appear to have a lower voltage than it should
+    // and the state machine does not progress beyond init_errorcheck.
+    start_timer(300*CP10MS);
+
     return tr_ok;
+}
+
+tretcode init_batvwait(tevent evt)
+{
+    // Wait for the timer flag to be raised.
+    tretcode rc = tr_wait;
+
+    if (evt == evt_timerfinished)
+    {
+        rc = tr_ok;
+    }
+
+    return rc;
 }
 
 
@@ -645,10 +667,17 @@ tretcode init_rtc_slow(tevent evt)
 tretcode init_rtc_1min(tevent evt)
 {
     // Configure RTC
-    // Interrupt and reset happen every 32768/1024 * 32 counts per second * 60 seconds = 1 minute.
     // This must be done before any transitions to the end_state.
     // Otherwise the MCU will get stuck in the end_state.
-    RTCMOD = 1920-1;
+    if (nvparams_getsmplintmins()==0)
+    {
+        // TURBO MODE.
+        // Interrupt and reset occur every 32768/1024 * 32 counts per second = 1 second.
+        RTCMOD = 32-1;
+    } else {
+        // Interrupt and reset occur every 32768/1024 * 32 counts per second * 60 seconds = 1 minute.
+        RTCMOD = 1920-1;
+    }
     RTCCTL = RTCSS__XT1CLK | RTCSR |RTCPS__1024;
     RTCCTL |= RTCIE; // Enable RTC interrupts
 
@@ -726,35 +755,21 @@ tretcode smpl_hdcread(tevent evt)
 
 tretcode smpl_wait(tevent evt)
 {
-    tretcode rc;
+    // Set samplingloop=1 to indicate that LPM3.5 is about to be entered from the sampling loop.
+    *(unsigned int *)BKMEM_BASE = 1;
 
-    if (nvparams_getsmplintmins()==0)
-    {
-        // Kick the watchdog.
-         wdog_kick();
-
-        // Test mode. Wait 100ms before incrementing the minute counter.
-        start_timer(10*CP10MS);
-
-        // Do not enter LPM3.5
-        rc = tr_testmode;
-    } else {
-        // Set samplingloop=1 to indicate that LPM3.5 is about to be entered from the sampling loop.
-        *(unsigned int *)BKMEM_BASE = 1;
-
-        // Enter LPM3.5. This will trigger an LPM5 reset after 1 minute.
-        rc = tr_deepsleep;
-    }
-
-    return rc;
+    // Enter LPM3.5. This will trigger an LPM5 reset after 1 minute.
+    return tr_deepsleep;
 }
 
 tretcode smpl_checkcounter(tevent evt)
 {
     tretcode rc;
+    unsigned int smplintmins = nvparams_getsmplintmins();
 
-    if (minutecounter == 0)
+    if ((minutecounter == 0) || (smplintmins == 0))
     {
+        // Request reading when minute counter is 0 or when in turbo mode.
         rc = tr_hdcreq;
     }
     else
@@ -765,7 +780,7 @@ tretcode smpl_checkcounter(tevent evt)
 
 
     fram_write_enable();
-    if (minutecounter < nvparams_getsmplintmins()-1)
+    if (minutecounter < smplintmins-1)
     {
         minutecounter++;
     }
@@ -775,18 +790,6 @@ tretcode smpl_checkcounter(tevent evt)
     }
     fram_write_disable();
 
-
-    return rc;
-}
-
-tretcode tst_wait(tevent evt)
-{
-    tretcode rc = tr_wait;
-
-    if (evt == evt_timerfinished)
-    {
-        rc = tr_ok;
-    }
 
     return rc;
 }

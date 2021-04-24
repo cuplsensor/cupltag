@@ -29,7 +29,10 @@ State Chart
         init_wakeupcheck --> init_rtc_slow: tr_por
         init_wakeupcheck --> smpl_checkcounter: tr_samplingloop
 
-        init_rtc_slow --> init_configcheck: tr_ok
+        init_rtc_slow --> init_batvwait: tr_ok
+        
+        init_batvwait --> init_configcheck: tr_ok
+        init_batvwait --> init_batvwait: tr_wait
 
         init_configcheck --> init_errorcheck: tr_ok
         init_configcheck --> [*]: tr_deepsleep
@@ -50,11 +53,7 @@ State Chart
         smpl_hdcread --> smpl_wait: tr_ok
         smpl_hdcread --> [*]: tr_lowbat
 
-        smpl_wait --> tst_wait: tr_testmode
         smpl_wait --> [*]: tr_deepsleep
-
-        tst_wait --> smpl_checkcounter: tr_ok
-        tst_wait --> tst_wait: tr_wait
 
         err_msg --> [*]: tr_deepsleep
 
