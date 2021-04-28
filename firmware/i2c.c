@@ -61,7 +61,7 @@ void i2c_init()
 void i2c_off() {
     EUSCI_B_I2C_disable(EUSCI_BASE);
 
-    GPIO_setAsInputPinWithPullDownResistor(GPIO_PORT_P4, GPIO_PIN6 + GPIO_PIN7);
+    GPIO_setAsInputPinWithPullDownResistor(GPIO_PORT_P1, GPIO_PIN2 + GPIO_PIN3);
 }
 
 uint8_t i2c_write8(uint8_t slaveAddr, uint8_t regOffset, uint8_t writeData)
@@ -80,6 +80,13 @@ int i2c_readreg(uint8_t slaveAddr, uint8_t mema, uint8_t rega)
     i2c_read_block(slaveAddr, mema, 1, &rxData, rega);
 
     return rxData;
+}
+
+void i2c_send_start(uint8_t slaveAddr)
+{
+    EUSCI_B_I2C_masterSendStart(EUSCI_BASE);
+    EUSCI_B_I2C_masterSendStart(EUSCI_BASE);
+    EUSCI_B_I2C_masterSendStart(EUSCI_BASE);
 }
 
 int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, uint8_t * txData)

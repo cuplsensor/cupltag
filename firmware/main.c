@@ -60,6 +60,30 @@ void fram_write_disable() {
     __enable_interrupt();            // Re-enable global interrupts after the FRAM write has completed.
 }
 
+void power_cycle_vmem() {
+    // This is needed if the NTAG I2C gets stuck, with SCL held low.
+    // P4.2 EN as output low.
+    GPIO_setOutputLowOnPin(
+            GPIO_PORT_P3,
+            GPIO_PIN2
+    );
+
+    i2c_off();
+
+    start_timer(2*CP10MS);
+    __bis_SR_register(LPM3_bits + GIE);
+
+    GPIO_setOutputHighOnPin(
+            GPIO_PORT_P3,
+            GPIO_PIN2
+    );
+
+    start_timer(2*CP10MS);
+    __bis_SR_register(LPM3_bits + GIE);
+
+    i2c_init();
+}
+
 volatile int timerFlag = 0;                             /*!< Flag set by the Timer Interrupt Service Routine. */
 volatile int hdcFlag = 0;                               /*!< Flag set by the HDC2021 humidity sensor data-ready Interrupt Service Routine. */
 
@@ -495,6 +519,8 @@ tretcode init_ntag(tevent evt)
     if (updatecc) {
         nt3h_update_cc();
     }
+
+    //nt3h_disappear();
 
     /* Check nPRG. */
     nPRG = GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN5);

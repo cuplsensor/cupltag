@@ -103,10 +103,12 @@ int nt3h_check_address(void)
 
 void nt3h_update_cc(void) {
     i2c_read_block(DEVADDR, 0, BLOCKSIZE, rxData, 0xFF);
+    rxData[0] = DEVADDR << 1;
     rxData[12] = 0xE1;
     rxData[13] = 0x10;
     rxData[14] = 0x6D;
     i2c_write_block(DEVADDR, PAGE0, BLOCKSIZE, rxData);
+    while(nt3h_eepromwritedone() != 0);
 }
 
 /*! \brief Write a 16-byte block of the NT3H2211 I2C EEPROM.
@@ -116,9 +118,7 @@ void nt3h_update_cc(void) {
 int nt3h_writetag(int eepromBlock, char * blkdata)
 {
     // Do not overwrite the serial number and slave address.
-    i2c_write_block(DEVADDR, eepromBlock, BLOCKSIZE, blkdata);
-
-    return 0;
+    return i2c_write_block(DEVADDR, eepromBlock, BLOCKSIZE, blkdata);
 }
 
 /*! \brief Read a 16-byte block from the NT3H2211 I2C EEPROM.
