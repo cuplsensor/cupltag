@@ -75,9 +75,10 @@ void stat_setscantimeout()
     rstcause |= SCANTIMEOUT_BIT;
 }
 
-unsigned int stat_get(bool * err, int resetsalltime)
+unsigned int stat_get(bool * err, bool * borsvs, int resetsalltime)
 {
     *err = ((rstcause & ERR_BITS) > 0);
+    *borsvs = ((rstcause & (BOR_BIT | SVSH_BIT)) > 0);
     resetsalltime = resetsalltime >> 4;
     return (resetsalltime << 8) | (rstcause & 0xFF);
 }

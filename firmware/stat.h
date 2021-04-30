@@ -29,7 +29,7 @@
 
 void stat_rdrstcause();
 int stat_rstcause_is_lpm5wu();
-unsigned int stat_get(bool * err, int resetsalltime);
+unsigned int stat_get(bool * err, bool * borsvs, int resetsalltime);
 void stat_setscantimeout();
 void stat_setclockfailure();
 

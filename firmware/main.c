@@ -60,30 +60,6 @@ void fram_write_disable() {
     __enable_interrupt();            // Re-enable global interrupts after the FRAM write has completed.
 }
 
-void power_cycle_vmem() {
-    // This is needed if the NTAG I2C gets stuck, with SCL held low.
-    // P4.2 EN as output low.
-    GPIO_setOutputLowOnPin(
-            GPIO_PORT_P3,
-            GPIO_PIN2
-    );
-
-    i2c_off();
-
-    start_timer(2*CP10MS);
-    __bis_SR_register(LPM3_bits + GIE);
-
-    GPIO_setOutputHighOnPin(
-            GPIO_PORT_P3,
-            GPIO_PIN2
-    );
-
-    start_timer(2*CP10MS);
-    __bis_SR_register(LPM3_bits + GIE);
-
-    i2c_init();
-}
-
 volatile int timerFlag = 0;                             /*!< Flag set by the Timer Interrupt Service Routine. */
 volatile int hdcFlag = 0;                               /*!< Flag set by the HDC2021 humidity sensor data-ready Interrupt Service Routine. */
 
@@ -585,7 +561,11 @@ tretcode init_configcheck(tevent evt)
 tretcode init_errorcheck(tevent evt)
 {
     tretcode rc;
-    bool err = false;
+    bool syserr = false;    /* System error flag. When asserted, the system cannot continue. */
+    bool rsterr = false;    /* Reset error flag. */
+    bool rstborsvs = false; /* Reset caused by Brownout or Supply Voltage Supervisor flag. This is not always an error. It depends on battery voltage. */
+    bool lowbatv = false;   /* Low battery voltage flag. */
+
     unsigned int status;
     int resetsalltime, resetsperloop;
     unsigned int batv, batv_mv;
@@ -595,30 +575,42 @@ tretcode init_errorcheck(tevent evt)
     resetsalltime = nvparams_getresetsalltime();
     resetsperloop = nvparams_getresetsperloop();
 
-    status = stat_get(&err, resetsalltime);
+    // Check for low battery.
     batv = batv_measure();
     batv_mv = batv_to_mv(batv);
-
-    if (err == false)
+    if (batv_mv < nvparams_getminvoltagemv())
     {
-        // Clear the resets counter if the reset has been caused intentionally (e.g. by the user replacing the battery).
-        // The resets counter should only count unintended resets (e.g. due to svs or the watchdog).
-        // Without this behaviour, the Tag could get stuck in an error state.
+        lowbatv = true;
+    }
+
+    // Check what has caused the reset and whether or not this is an error.
+    status = stat_get(&rsterr, &rstborsvs, resetsalltime);
+
+    // Cancel the reset error if a new battery has been inserted.
+    // New battery insertion corresponds to a BOR or an SVS_H reset flag
+    // and a battery voltage higher than the minimum threshold. Sometimes
+    // BOR and SVS_H occur when a new battery is inserted, but these are not indicative
+    // of a power supply issue.
+    if (rstborsvs && !lowbatv)
+    {
+        rsterr = false;
+    }
+
+    // Clear the resets counter if the reset has been caused intentionally (e.g. by the user replacing the battery).
+    // The resets counter should only count unintended resets, not caused by user intervention.
+    // Without this, the battery will go flat and cuplTag will be stuck in an error state,
+    // even after a new battery is inserted.
+    if (rsterr == false)
+    {
         nvparams_cresetsperloop();
         resetsperloop = 0;
     }
 
-    // Check for too many resets.
-    if (resetsperloop > 10)
+    // Check for too many resets. Reset errors are permitted, so long as we do not count more than 10 consecutively.
+    if ((resetsperloop > 10) || lowbatv)
     {
         // Go to LPM3.5 This prevents wearing out the EEPROM after repeated resets.
-        err = true; // More than 10 consecutive unintended resets before reaching the end of the circular buffer. Stop.
-    }
-
-    // Check for low battery.
-    if (batv_mv < nvparams_getminvoltagemv())
-    {
-        err = true;
+        syserr = true; // More than 10 consecutive unintended resets before reaching the end of the circular buffer. Stop.
     }
 
     /* Initialise minute counter to 0. */
@@ -627,9 +619,8 @@ tretcode init_errorcheck(tevent evt)
     fram_write_disable();
 
     /* Initialise the encoder. */
-    enc_init(status, err, batv);
-    rc = (err) ? tr_deepsleep : tr_ok;
-
+    enc_init(status, syserr, batv);
+    rc = (syserr) ? tr_deepsleep : tr_ok;
 
     return rc;
 }
