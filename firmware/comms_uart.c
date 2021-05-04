@@ -29,7 +29,7 @@
 #include "stdint.h"
 #include <string.h>
 
-#define HW_VERSION    HT04
+#define HW_VERSION    HT07R2
 #define FW_VERSION    1.4
 
 #define    XSTR(V)        #V

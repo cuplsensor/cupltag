@@ -496,8 +496,6 @@ tretcode init_ntag(tevent evt)
         nt3h_update_cc();
     }
 
-    //nt3h_disappear();
-
     /* Check nPRG. */
     nPRG = GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN5);
 
