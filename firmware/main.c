@@ -688,7 +688,7 @@ tretcode init_rtc_1min(tevent evt)
     {
         // TURBO MODE.
         // Interrupt and reset occur every 32768/1024 * 32 counts per second = 1 second.
-        RTCMOD = 32-1;
+        RTCMOD = 101-1;
     } else {
         // Interrupt and reset occur every 32768/1024 * 32 counts per second * 60 seconds = 1 minute.
         RTCMOD = 1920-1;
@@ -764,6 +764,7 @@ tretcode smpl_hdcread(tevent evt)
             rc = tr_lowbat;               // Drop into LPM3.5
         }
     }
+    nt3h_clearlock();
 
     return rc;
 }

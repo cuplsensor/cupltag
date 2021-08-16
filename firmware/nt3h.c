@@ -132,6 +132,20 @@ int nt3h_readtag(int eepromBlock, char * blkdata)
     return 0;
 }
 
+volatile int nsreg2, nsreg3;
+
+void nt3h_clearlock(void)
+{
+    nsreg2 = i2c_readreg(DEVADDR, 0xFE, 6);
+
+    // Mask bit 6. Clear data
+    unsigned char txData[3] = {6, 0x40, 0};
+
+    i2c_write_block(DEVADDR, 0xFE, 3, txData);
+
+    nsreg3 = i2c_readreg(DEVADDR, 0xFE, 6);
+}
+
 int nt3h_eepromwritedone(void)
 {
     int nsreg = i2c_readreg(DEVADDR, 0xFE, 6);

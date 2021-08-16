@@ -1,3 +1,5 @@
 
 *.rst~
 *.un~
+hardware/HT07/Gerber/Releases/
+*.csv#
