@@ -34,7 +34,7 @@
   )
 
   (setup
-    (last_trace_width 0.2)
+    (last_trace_width 0.15)
     (user_trace_width 0.15)
     (user_trace_width 0.2)
     (user_trace_width 0.3)
@@ -2158,7 +2158,7 @@
   (gr_text ® (at 116.3955 100.3935) (layer F.SilkS) (tstamp 607E248C)
     (effects (font (size 0.6 0.6) (thickness 0.11)) (justify left))
   )
-  (gr_text "https://cupl.co.uk\n© 2020 Plotsensor Ltd.\nLicenced under CERN-OHL-S v2 or later\nhttps://github.com/cuplsensor/cupltag" (at 107.5055 110.617) (layer F.SilkS) (tstamp 607DEB33)
+  (gr_text "\n© 2021 PLOTSENSOR LTD.\nLICENCED UNDER CERN-OHL-S v2 OR LATER\nHTTPS://GITHUB.COM/CUPLSENSOR/CUPLTAG" (at 107.5055 110.617) (layer F.SilkS) (tstamp 607DEB33)
     (effects (font (size 0.7 0.7) (thickness 0.12)) (justify left))
   )
   (gr_line (start 84.8995 79.375) (end 90.932 79.375) (layer F.SilkS) (width 0.15) (tstamp 602B65FC))
@@ -2261,7 +2261,7 @@
   (gr_arc (start 83.750188 101.916393) (end 83.750188 101.416393) (angle -90) (layer Edge.Cuts) (width 0.2) (tstamp 60250A8F))
   (gr_line (start 92.350188 60.216393) (end 90.250188 60.216393) (layer Edge.Cuts) (width 0.2) (tstamp 60250A8E))
   (gr_line (start 108.212 86.36) (end 109.355 86.36) (layer F.SilkS) (width 0.15))
-  (gr_text "CUPL® TAG HT07R2 04/21" (at 131.056 94.234 90) (layer F.SilkS) (tstamp 602ACAE0)
+  (gr_text "CUPL® TAG HT07R3 08/21" (at 131.056 94.234 90) (layer F.SilkS) (tstamp 602ACAE0)
     (effects (font (size 0.8 0.8) (thickness 0.15)) (justify left))
   )
   (gr_text "NFC SENSOR" (at 120.126 100.695) (layer F.SilkS) (tstamp 5EB06DA8)

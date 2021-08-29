@@ -3,3 +3,9 @@
 *.un~
 hardware/HT07/Gerber/Releases/
 *.csv#
+hardware/HT07/HT07.sch-bak
+*.sch-bak
+*.kicad_pcb-bak
+*.kicad_pcb-bak
+*.kicad_pcb-bak
+*.sch-bak
