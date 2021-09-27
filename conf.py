@@ -14,7 +14,6 @@
 #
 import subprocess, os
 import sys
-import guzzle_sphinx_theme
 sys.path.insert(0, os.path.abspath('.'))
 
 # Run doxygen if we are running on read_the_docs
@@ -50,7 +49,7 @@ extensions = [
     'sphinx.ext.githubpages',
     'sphinx.ext.napoleon',
     'breathe',
-    'guzzle_sphinx_theme',
+    'sphinx_rtd_theme',
     'sphinxcontrib.plantuml',
     'sphinxcontrib.needs'
 ]
@@ -105,8 +104,7 @@ needs_types = [dict(directive="req", title="Requirement", prefix="R_", color="#B
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme_path = guzzle_sphinx_theme.html_theme_path()
-html_theme = 'guzzle_sphinx_theme'
+html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -114,7 +112,6 @@ html_theme = 'guzzle_sphinx_theme'
 #
 html_theme_options = {
     'navigation_depth': 4,
-    'project_nav_name': 'Tag'
 }
 html_logo = 'cupl_textonly_white_small.png'
 #html_favicon = 'pslogo.ico'
