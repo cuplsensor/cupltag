@@ -4,6 +4,7 @@
    :caption: Reference
 
    gettingstarted
+   programming/index
    statechart
    startup
    operatingmodes

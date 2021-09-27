@@ -9,3 +9,6 @@ hardware/HT07/HT07.sch-bak
 *.kicad_pcb-bak
 *.kicad_pcb-bak
 *.sch-bak
+*.kicad_pcb-bak
+*.sch-bak
+hardware/HT07/fp-info-cache
