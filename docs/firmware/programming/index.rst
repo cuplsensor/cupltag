@@ -58,7 +58,7 @@ We will program / debug the MSP430 on HT07 using Spy-Bi-Wire. Connect it to the 
   :width: 100%
   :alt: Jumper wire connections on the MSP-FET
 
-Program and Test
+Program in CCS
 +++++++++++++++++
 
 #. Connect the MSP-FET to a PC with a USB cable. 
@@ -70,7 +70,10 @@ Program and Test
   :width: 100%
   :alt: Debug button in Code Composer Studio
 
-Test the program has loaded correctly by scanning the tag with your phone. 
+Test
++++++
+
+Test the program has loaded correctly by scanning HT07 with your phone. 
 
 If JP30 is shorted, the MSP430 will boot into *programming mode*: The serial port is enabled and a status string is written to an NDEF text record on the tag.
 
