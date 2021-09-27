@@ -127,10 +127,6 @@ html_logo = 'cupl_textonly_white_small.png'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['docs/static']
 
-html_css_files = [
-    'custom.css',
-]
-
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
 #

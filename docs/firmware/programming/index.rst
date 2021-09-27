@@ -14,14 +14,14 @@ Equipment
 
 You will need: 
 
-- An MSP-FET with a USB cable.
-- A PC running Code Composer Studio.
-- 4 coloured jumper wires.
-- A 2x4 way 2.54mm pitch pin header.
-- A 1x2 way 2.54mm pitch pin header.
-- A 2 way jumper.
-- Solder.
-- A cuplTag PCBA (HT07), unscrewed from the enclosure, with no battery inserted.
+ - An MSP-FET with a USB cable.
+ - A PC running Code Composer Studio.
+ - 4 coloured jumper wires.
+ - A 2x4 way 2.54mm pitch pin header.
+ - A 1x2 way 2.54mm pitch pin header.
+ - A 2 way jumper.
+ - Solder.
+ - A cuplTag PCBA (HT07), unscrewed from the enclosure, with no battery inserted.
 
 
 Populate the Headers

@@ -14,3 +14,6 @@ hardware/HT07/HT07.sch-bak
 hardware/HT07/fp-info-cache
 *.swp
 docs/firmware/programming/.index.rst.swp
+*.py~
+*.swo
+*.swp
