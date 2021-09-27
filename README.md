@@ -8,6 +8,8 @@ Configuration parameters are written over a serial port at 9600 baud. Alternativ
 
 The firmware spends much of its time in LPM3.5 in order to achieve an average current consumption ~0.5uA, which gives years of operation from a CR1220 coin cell battery.
 
+[Buy one on Crowd Supply!](https://crowdsupply.com/cupl/cupltag)
+
 <img src="cupl-front.jpg" alt="Board photo" width="50%"/>
 
 ## Pinout
