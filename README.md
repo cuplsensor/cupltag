@@ -22,8 +22,8 @@ J30 is a 2.54mm pitch 2x4 way header.
 | 2   | RX   | Input     | UART receive      | Receive to MSP430              |
 | 3   | GND  |           | GND               |                                |
 | 4   | TST  | Input     | Spy-Bi-Wire Clock | Also TEST signal for BSL entry |
-| 5   | nRST | I/O       | Spy-Bi-Wire Data  | Also active low RESET signal   |
-| 6   | GND  |           | GND               |                                |
+| 5   | GND  |           | GND               |                                |
+| 6   | nRST | I/O       | Spy-Bi-Wire Data  | Also active low RESET signal   |
 | 7   | VDD  | Input     | Power in          | +3V3                           |
 | 8   | nPRG | Input     | Prog. Mode Enable | Active low                     |
 
