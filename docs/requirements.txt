@@ -3,5 +3,6 @@ cffi==1.12.2
 ndeflib==0.3.3
 pycparser==2.19
 wheel==0.33.6
+guzzle_sphinx_theme
 sphinxcontrib-plantuml
 sphinxcontrib-needs
