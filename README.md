@@ -10,7 +10,7 @@ The firmware spends much of its time in LPM3.5 in order to achieve an average cu
 
 [Buy one on Crowd Supply!](https://crowdsupply.com/cupl/cupltag)
 
-<img src="cupl-front.jpg" alt="Board photo" width="50%"/>
+<img src="cupl-front.jpg" alt="Board photo" />
 
 ## Pinout
 
