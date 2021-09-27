@@ -37,23 +37,25 @@ First, solder the pin headers onto J30 and JP30 of HT07. Use the jumper to short
 Make Connections
 +++++++++++++++++
 
+In the diagram below we will make connection J2 instead of J1, because the HT07 has no battery inserted.
+
 .. figure:: fetschematic.png
   :width: 100%
   :alt: MSP-FET Spy-Bi-Wire Schematic
 
-We will program / debug the MSP430 on HT07 using Spy-Bi-Wire. Connect it to the MSP-FET.
+Spy-Bi-Wire is used to progra . Connect it to the MSP-FET.
 
-+---------+--------+--------------+-------------+--------------+-----------+
-| Name    | Colour | MSP-FET name | MSP-FET pin | HT07 J30 pin | netname   |
-+---------+--------+--------------+-------------+--------------+-----------+
-| +3V3    | Red    | VCC_TOOL     | 2           | 7            | VDD       |
-+---------+--------+--------------+-------------+--------------+-----------+
-| GND     | Black  | GND          | 9           | 3            | GND       |
-+---------+--------+--------------+-------------+--------------+-----------+
-| SBWTDIO | White  | TDO/TDI      | 1           | 6            | nRST      |
-+---------+--------+--------------+-------------+--------------+-----------+
-| SBWTCK  | Purple | TCK          | 7           | 4            | TST       |
-+---------+--------+--------------+-------------+--------------+-----------+
++---------+--------+--------------+-------------+--------------+-----------------+
+| Name    | Colour | MSP-FET name | MSP-FET pin | HT07 J30 pin | HT07 J30 name   |
++---------+--------+--------------+-------------+--------------+-----------------+
+| +3V3    | Red    | VCC_TOOL     | 2           | 7            | VDD             |
++---------+--------+--------------+-------------+--------------+-----------------+
+| GND     | Black  | GND          | 9           | 3            | GND             |
++---------+--------+--------------+-------------+--------------+-----------------+
+| SBWTDIO | White  | TDO/TDI      | 1           | 6            | nRST            |
++---------+--------+--------------+-------------+--------------+-----------------+
+| SBWTCK  | Purple | TCK          | 7           | 4            | TST             |
++---------+--------+--------------+-------------+--------------+-----------------+
 
 .. figure:: fetconnections.jpg
   :width: 100%
