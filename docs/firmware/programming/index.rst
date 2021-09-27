@@ -3,20 +3,29 @@
 Programming
 ~~~~~~~~~~~~~
 
+These instructions demonstrate how to program and debug the MSP430 on cuplTag.
+
+Equipment
++++++++++++
+
 .. image:: whatyouwillneed.jpg
   :width: 70%
   :alt: Items needed to program the MSP430
 
-You will need:
+You will need: 
 
-* An `MSP-FET <https://www.mouser.co.uk/ProductDetail/Texas-Instruments/MSP-FET?qs=Mrfp3zus3mNXSLrVqFkg8A==>`_ with a USB cable.
-* A PC running Code Composer Studio.
-* 4 coloured jumper wires.
-* A 2x4 way 2.54mm pitch pin header.
-* A 1x2 way 2.54mm pitch pin header.
-* A 2 way jumper.
-* Solder.
-* A cuplTag PCBA (HT07), unscrewed from the enclosure, with no battery inserted.
+- An `MSP-FET <https://www.mouser.co.uk/ProductDetail/Texas-Instruments/MSP-FET?qs=Mrfp3zus3mNXSLrVqFkg8A==>`_ with a USB cable.
+- A PC running Code Composer Studio.
+- 4 coloured jumper wires.
+- A 2x4 way 2.54mm pitch pin header.
+- A 1x2 way 2.54mm pitch pin header.
+- A 2 way jumper.
+- Solder.
+- A cuplTag PCBA (HT07), unscrewed from the enclosure, with no battery inserted.
+
+
+Populate the Headers
++++++++++++++++++++++
 
 .. image:: headerassembly.jpg
   :width: 100%
@@ -24,6 +33,10 @@ You will need:
 
 First, solder the pin headers onto J30 and JP30 of HT07. Use the jumper to short JP30. 
   
+
+Make Connections
++++++++++++++++++
+
 .. image:: fetschematic.png
   :width: 100%
   :alt: MSP-FET Spy-Bi-Wire Schematic
@@ -31,7 +44,7 @@ First, solder the pin headers onto J30 and JP30 of HT07. Use the jumper to short
 We will program / debug the MSP430 on HT07 using Spy-Bi-Wire. Connect it to the MSP-FET.
 
 +---------+--------+--------------+-------------+--------------+-----------+
-| Name    | Colour | MSP-FET name | MSP-FET pin | HT07 J30 pin | HT07 name |
+| Name    | Colour | MSP-FET name | MSP-FET pin | HT07 J30 pin | netname   |
 +---------+--------+--------------+-------------+--------------+-----------+
 | +3V3    | Red    | VCC_TOOL     | 2           | 7            | VDD       |
 +---------+--------+--------------+-------------+--------------+-----------+
@@ -46,9 +59,13 @@ We will program / debug the MSP430 on HT07 using Spy-Bi-Wire. Connect it to the 
   :width: 100%
   :alt: Jumper wire connections on the MSP-FET
 
+Program and Test
++++++++++++++++++
+
 #. Connect the MSP-FET to a PC with a USB cable. 
 #. Open the Code Composer Studio cuplTag project `created earlier <GettingStarted>`.
 #. Click on the Debug button. Wait for programming to complete.
+
 
 .. image:: clickdebug.jpg
   :width: 100%
