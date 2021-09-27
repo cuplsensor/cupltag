@@ -12,8 +12,6 @@ Equipment
   :width: 70%
   :alt: Items needed to program the MSP430
 
-You will need: 
-
 - An `MSP-FET <https://www.mouser.co.uk/ProductDetail/Texas-Instruments/MSP-FET?qs=Mrfp3zus3mNXSLrVqFkg8A==>`_ with a USB cable.
 - A PC running Code Composer Studio.
 - 4 coloured jumper wires.
@@ -40,6 +38,7 @@ Make Connections
 .. image:: fetschematic.png
   :width: 100%
   :alt: MSP-FET Spy-Bi-Wire Schematic
+  
 
 We will program / debug the MSP430 on HT07 using Spy-Bi-Wire. Connect it to the MSP-FET.
 
