@@ -12,16 +12,18 @@ Equipment
   :width: 70%
   :alt: Items needed to program the MSP430
 
+|
+
 You will need: 
 
- - An MSP-FET with a USB cable.
- - A PC running Code Composer Studio.
- - 4 coloured jumper wires.
- - A 2x4 way 2.54mm pitch pin header.
- - A 1x2 way 2.54mm pitch pin header.
- - A 2 way jumper.
- - Solder.
- - A cuplTag PCBA (HT07), unscrewed from the enclosure, with no battery inserted.
+* An MSP-FET with a USB cable.
+* A PC running Code Composer Studio.
+* 4 coloured jumper wires.
+* A 2x4 way 2.54mm pitch pin header.
+* A 1x2 way 2.54mm pitch pin header.
+* A 2 way jumper.
+* Solder.
+* A cuplTag PCBA (HT07), unscrewed from the enclosure, with no battery inserted.
 
 
 Populate the Headers
@@ -30,6 +32,8 @@ Populate the Headers
 .. figure:: headerassembly.jpg
   :width: 100%
   :alt: Soldering headers onto HT07
+
+|
 
 First, solder the pin headers onto J30 and JP30 of HT07. Use the jumper to short JP30. 
   
@@ -40,7 +44,8 @@ Make Connections
 .. figure:: fetschematic.png
   :width: 100%
   :alt: MSP-FET Spy-Bi-Wire Schematic
-  
+
+|
 
 We will program / debug the MSP430 on HT07 using Spy-Bi-Wire. Connect it to the MSP-FET.
 
@@ -71,6 +76,8 @@ Program in CCS
 .. figure:: clickdebug.jpg
   :width: 100%
   :alt: Debug button in Code Composer Studio
+
+|
 
 Test
 +++++
