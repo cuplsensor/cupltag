@@ -29,10 +29,15 @@ J30 is a 2.54mm pitch 2x4 way header.
 
 ## Documentation 
 
+### Guides
+
 * [Getting Started](docs/firmware/gettingstarted.rst) by loading the project into Code Composer.
 * [Programming](docs/firmware/programming/index.rst) the MSP430.
 
-    
+### Interface
+
+* [Configuration Strings](docs/specs/configstrings.rst)  that can be written over the serial port or NFC.
+
 ## Licence
 
 ### Firmware
