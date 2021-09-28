@@ -23,12 +23,14 @@ Place the shorting jumper on HT07 JP30. This will cause *Programming Mode* to be
 
 | Name   | Colour | MSP-FET name | MSP-FET pin | J30 pin | J30 name |
 | ------ | ------ | ------------ | ----------- | ------- | -------- |
-| +3V3** | Red    | VCC_TOOL     | 2           | 7       | VDD      |
+| +3V3*  | Red    | VCC_TOOL     | 2           | 7       | VDD      |
 | GND    | Black  | GND          | 9           | 3       | GND      |
 | TX     | Yellow | UART_TXD     | 12          | 1       | <TX      |
 | RX     | Green  | UART_RXD     | 14          | 2       | RX>      |
 
-**The HT07 can be self-powered from a CR1220 coin cell. In this case only 3 connections are required: GND, TX and RX.![MSP-FET connected to a cuplTag via UART](mspfetuart.jpg)
+\*If the HT07 has a coin cell inserted, only GND, TX and RX are required.
+
+![MSP-FET connected to a cuplTag via UART](mspfetuart.jpg)
 
 ## Test with TeraTerm
 
@@ -36,7 +38,9 @@ Place the shorting jumper on HT07 JP30. This will cause *Programming Mode* to be
 2. Open TeraTerm.
 3. Click Setup -> Serial Port...
 4. **Port** the Application UART port for your MSP-FET. This can be found in device manager.
-   ![image-20210929000000301](C:\Users\malco\AppData\Roaming\Typora\typora-user-images\image-20210929000000301.png)
+
+      ![MSP Application UART in Device Manager](devmanager.png)
+   
 5. **Speed** 9600 baud
 6. **Data** 8 bit.
 7. **Parity** None.
@@ -44,7 +48,10 @@ Place the shorting jumper on HT07 JP30. This will cause *Programming Mode* to be
 9. **Flow control** None.
 10. Click OK.
 11. Press the RESET button on HT07. You will see `<boot>`.
-    ![boot string in TeraTerm](ttboot.png)
+    
+      ![boot string in TeraTerm](ttboot.png)
+
 12. Send `<x>`. The version string will be printed.
-    ![Version string in Teraterm](ttversion.png)
+      
+      ![Version string in Teraterm](ttversion.png)
 
