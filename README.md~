@@ -33,6 +33,7 @@ J30 is a 2.54mm pitch 2x4 way header.
 
 * [Getting Started](docs/firmware/gettingstarted.rst) by loading the project into Code Composer.
 * [Programming](docs/firmware/programming/index.rst) the MSP430.
+* [Configuration with UART (1 of 2)](docs/guides/configUARTpt1/index.md).
 
 ### Interface
 
