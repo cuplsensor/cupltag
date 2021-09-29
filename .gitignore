@@ -1,7 +1,6 @@
 
 *.rst~
 *.un~
-hardware/HT07/Gerber/Releases/
 *.csv#
 hardware/HT07/HT07.sch-bak
 *.sch-bak
@@ -17,3 +16,6 @@ docs/firmware/programming/.index.rst.swp
 *.py~
 *.swo
 *.swp
+hardware/HT07/Gerber/Releases/HT07R3/HT07_BOM_060921.xlsx
+*.zip
+hardware/HT07/Gerber/Releases/Parts List.ods

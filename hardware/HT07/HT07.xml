@@ -2,18 +2,18 @@
 <export version="D">
   <design>
     <source>C:\Users\malco\Documents\Plotsensor\cupltag\hardware\HT07\HT07.sch</source>
-    <date>21/04/2021 09:00:33</date>
+    <date>29/09/2021 13:37:43</date>
     <tool>Eeschema (5.1.5)-3</tool>
     <sheet number="1" name="/" tstamps="/">
       <title_block>
         <title>CUPL TAG</title>
         <company>COPYRIGHT Plotsensor Ltd. 2021</company>
-        <rev>2</rev>
-        <date>2021-04-19</date>
+        <rev>3</rev>
+        <date>2021-08-16</date>
         <source>HT07.sch</source>
-        <comment number="1" value="Designed by Malcolm Mackay"/>
+        <comment number="1" value="https://github.com/cuplsensor/cupltag"/>
         <comment number="2" value="Licenced under CERN OHL-v2-S"/>
-        <comment number="3" value="CUPL®"/>
+        <comment number="3" value="CUPL® Designed by Malcolm Mackay"/>
         <comment number="4" value=""/>
       </title_block>
     </sheet>
@@ -150,14 +150,14 @@
       <tstamp>5B72B8AE</tstamp>
     </comp>
     <comp ref="U1">
-      <value>HDC2021</value>
+      <value>HDC2022DEPR</value>
       <footprint>CUPL_FP:HDC2021</footprint>
       <datasheet>https://www.ti.com/lit/ds/symlink/hdc2021.pdf</datasheet>
       <fields>
         <field name="MANF">TEXAS</field>
-        <field name="MANF#">HDC2021DEBT</field>
+        <field name="MANF#">HDC2022DEPR</field>
         <field name="SUPPLIER">TEXAS</field>
-        <field name="SUPPLIER#">HDC2021DEBT</field>
+        <field name="SUPPLIER#">HDC2022DEPR</field>
       </fields>
       <libsource lib="CUPL" part="HDC2021" description="Low Power Humidity and Temperature Sensor"/>
       <sheetpath names="/" tstamps="/"/>
@@ -213,7 +213,7 @@
         <field name="MANF">MURATA</field>
         <field name="MANF#">04025A180FAT2A</field>
         <field name="SUPPLIER">FARNELL</field>
-        <field name="SUPPLIER#">2781441</field>
+        <field name="SUPPLIER#">2332495</field>
       </fields>
       <libsource lib="device" part="C" description="Unpolarized capacitor"/>
       <sheetpath names="/" tstamps="/"/>
@@ -224,6 +224,7 @@
       <footprint>CUPL_FP:TSSOP-8_3x3mm_P0.65mm</footprint>
       <datasheet>https://www.nxp.com/docs/en/data-sheet/NT3H2111_2211.pdf</datasheet>
       <fields>
+        <field name="ALT">ALT: NT3H2211W0FTTJ</field>
         <field name="MANF">NXP</field>
         <field name="MANF#">NT3H2111W0FTTJ</field>
         <field name="SUPPLIER">FARNELL</field>
@@ -256,20 +257,6 @@
       <libsource lib="Connector_Generic" part="Conn_02x04_Odd_Even" description="Generic connector, double row, 02x04, odd/even pin numbering scheme (row 1 odd numbers, row 2 even numbers), script generated (kicad-library-utils/schlib/autogen/connector/)"/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>60521E4D</tstamp>
-    </comp>
-    <comp ref="BT30">
-      <value>CR1220</value>
-      <footprint>CUPL_FP:MPD_BC501SM_CR1220</footprint>
-      <datasheet>~</datasheet>
-      <fields>
-        <field name="MANF">MPD</field>
-        <field name="MANF#">BC501SM</field>
-        <field name="SUPPLIER">DIGIKEY</field>
-        <field name="SUPPLIER#">BC501SM-TRCT-ND</field>
-      </fields>
-      <libsource lib="device" part="Battery_Cell" description="Single-cell battery"/>
-      <sheetpath names="/" tstamps="/"/>
-      <tstamp>605C1351</tstamp>
     </comp>
     <comp ref="JP31">
       <value>SolderJumper_2_Bridged_small</value>
@@ -430,6 +417,7 @@
       <footprint>CUPL_FP:TSSOP-38_4.4x9.7mm_P0.5mm</footprint>
       <datasheet>http://www.ti.com/lit/ds/symlink/msp430fr2155.pdf</datasheet>
       <fields>
+        <field name="ALT">ALT: MSP430FR2355TDBTR</field>
         <field name="MANF">TEXAS</field>
         <field name="MANF#">MSP430FR2155TDBT</field>
         <field name="SUPPLIER">MOUSER</field>
@@ -446,6 +434,20 @@
       <libsource lib="Graphic" part="Logo_Open_Hardware_Small" description="Open Hardware logo, small"/>
       <sheetpath names="/" tstamps="/"/>
       <tstamp>5EACC97C</tstamp>
+    </comp>
+    <comp ref="BT30">
+      <value>CR1220</value>
+      <footprint>CUPL_FP:MPD_BC501SM_CR1220</footprint>
+      <datasheet>~</datasheet>
+      <fields>
+        <field name="MANF">MPD</field>
+        <field name="MANF#">BC501SM</field>
+        <field name="SUPPLIER">DIGIKEY</field>
+        <field name="SUPPLIER#">BC501SM-TRCT-ND</field>
+      </fields>
+      <libsource lib="device" part="Battery_Cell" description="Single-cell battery"/>
+      <sheetpath names="/" tstamps="/"/>
+      <tstamp>605C1351</tstamp>
     </comp>
   </components>
   <libparts>
@@ -791,120 +793,120 @@
     </library>
   </libraries>
   <nets>
-    <net code="1" name="GND">
-      <node ref="J30" pin="3"/>
-      <node ref="JP30" pin="1"/>
-      <node ref="U4" pin="5"/>
-      <node ref="U4" pin="2"/>
-      <node ref="J30" pin="5"/>
-      <node ref="C4" pin="2"/>
-      <node ref="U3" pin="11"/>
-      <node ref="R3" pin="2"/>
-      <node ref="C3" pin="2"/>
-      <node ref="SW30" pin="1"/>
-      <node ref="C6" pin="2"/>
-      <node ref="C8" pin="2"/>
-      <node ref="C1" pin="2"/>
-      <node ref="U1" pin="7"/>
-      <node ref="U1" pin="3"/>
-      <node ref="JP31" pin="2"/>
-      <node ref="C7" pin="2"/>
-      <node ref="U1" pin="2"/>
-      <node ref="U2" pin="2"/>
-      <node ref="C2" pin="2"/>
-    </net>
-    <net code="2" name="/~PRG~">
-      <node ref="JP30" pin="2"/>
+    <net code="1" name="/~PRG~">
       <node ref="U3" pin="34"/>
       <node ref="J30" pin="8"/>
+      <node ref="JP30" pin="2"/>
       <node ref="R30" pin="2"/>
     </net>
-    <net code="3" name="VDD">
-      <node ref="D1" pin="1"/>
-      <node ref="U3" pin="10"/>
-      <node ref="C7" pin="1"/>
-      <node ref="R31" pin="1"/>
-      <node ref="U4" pin="4"/>
-      <node ref="R30" pin="1"/>
+    <net code="2" name="VDD">
       <node ref="C2" pin="1"/>
       <node ref="J30" pin="7"/>
+      <node ref="U4" pin="4"/>
+      <node ref="D1" pin="1"/>
+      <node ref="U3" pin="10"/>
+      <node ref="R30" pin="1"/>
+      <node ref="C7" pin="1"/>
+      <node ref="R31" pin="1"/>
+    </net>
+    <net code="3" name="GND">
+      <node ref="U2" pin="2"/>
+      <node ref="U3" pin="11"/>
+      <node ref="R3" pin="2"/>
+      <node ref="C4" pin="2"/>
+      <node ref="C3" pin="2"/>
+      <node ref="U4" pin="2"/>
+      <node ref="C8" pin="2"/>
+      <node ref="U1" pin="7"/>
+      <node ref="U1" pin="3"/>
+      <node ref="U4" pin="5"/>
+      <node ref="U1" pin="2"/>
+      <node ref="C6" pin="2"/>
+      <node ref="C1" pin="2"/>
+      <node ref="C2" pin="2"/>
+      <node ref="SW30" pin="1"/>
+      <node ref="JP31" pin="2"/>
+      <node ref="J30" pin="5"/>
+      <node ref="J30" pin="3"/>
+      <node ref="JP30" pin="1"/>
+      <node ref="C7" pin="2"/>
     </net>
     <net code="4" name="Net-(BT30-Pad2)">
-      <node ref="JP31" pin="1"/>
       <node ref="BT30" pin="2"/>
+      <node ref="JP31" pin="1"/>
     </net>
-    <net code="5" name="Net-(BT30-Pad1)">
+    <net code="5" name="Net-(U3-Pad35)">
+      <node ref="U3" pin="35"/>
+    </net>
+    <net code="6" name="Net-(U3-Pad37)">
+      <node ref="U3" pin="37"/>
+    </net>
+    <net code="7" name="Net-(U3-Pad38)">
+      <node ref="U3" pin="38"/>
+    </net>
+    <net code="8" name="Net-(U3-Pad7)">
+      <node ref="U3" pin="7"/>
+    </net>
+    <net code="9" name="Net-(U3-Pad36)">
+      <node ref="U3" pin="36"/>
+    </net>
+    <net code="10" name="Net-(U3-Pad33)">
+      <node ref="U3" pin="33"/>
+    </net>
+    <net code="11" name="Net-(U3-Pad32)">
+      <node ref="U3" pin="32"/>
+    </net>
+    <net code="12" name="Net-(U3-Pad31)">
+      <node ref="U3" pin="31"/>
+    </net>
+    <net code="13" name="Net-(U3-Pad30)">
+      <node ref="U3" pin="30"/>
+    </net>
+    <net code="14" name="Net-(U3-Pad3)">
+      <node ref="U3" pin="3"/>
+    </net>
+    <net code="15" name="Net-(U3-Pad27)">
+      <node ref="U3" pin="27"/>
+    </net>
+    <net code="16" name="Net-(U3-Pad26)">
+      <node ref="U3" pin="26"/>
+    </net>
+    <net code="17" name="Net-(U3-Pad22)">
+      <node ref="U3" pin="22"/>
+    </net>
+    <net code="18" name="Net-(BT30-Pad1)">
       <node ref="BT30" pin="1"/>
       <node ref="D1" pin="2"/>
     </net>
-    <net code="6" name="Net-(U3-Pad33)">
-      <node ref="U3" pin="33"/>
-    </net>
-    <net code="7" name="Net-(U3-Pad7)">
-      <node ref="U3" pin="7"/>
-    </net>
-    <net code="8" name="Net-(U3-Pad38)">
-      <node ref="U3" pin="38"/>
-    </net>
-    <net code="9" name="Net-(U3-Pad37)">
-      <node ref="U3" pin="37"/>
-    </net>
-    <net code="10" name="Net-(U3-Pad36)">
-      <node ref="U3" pin="36"/>
-    </net>
-    <net code="11" name="Net-(U3-Pad35)">
-      <node ref="U3" pin="35"/>
-    </net>
-    <net code="12" name="Net-(U3-Pad32)">
-      <node ref="U3" pin="32"/>
-    </net>
-    <net code="13" name="Net-(U3-Pad31)">
-      <node ref="U3" pin="31"/>
-    </net>
-    <net code="14" name="Net-(U3-Pad30)">
-      <node ref="U3" pin="30"/>
-    </net>
-    <net code="15" name="Net-(U3-Pad3)">
-      <node ref="U3" pin="3"/>
-    </net>
-    <net code="16" name="Net-(U3-Pad27)">
-      <node ref="U3" pin="27"/>
-    </net>
-    <net code="17" name="Net-(U3-Pad26)">
-      <node ref="U3" pin="26"/>
-    </net>
-    <net code="18" name="Net-(U3-Pad25)">
-      <node ref="U3" pin="25"/>
-    </net>
-    <net code="19" name="Net-(U3-Pad24)">
-      <node ref="U3" pin="24"/>
-    </net>
-    <net code="20" name="Net-(U3-Pad2)">
+    <net code="19" name="Net-(U3-Pad2)">
       <node ref="U3" pin="2"/>
     </net>
-    <net code="21" name="Net-(U3-Pad16)">
+    <net code="20" name="Net-(U3-Pad16)">
       <node ref="U3" pin="16"/>
     </net>
-    <net code="22" name="Net-(U3-Pad17)">
+    <net code="21" name="Net-(U3-Pad17)">
       <node ref="U3" pin="17"/>
     </net>
-    <net code="23" name="Net-(U3-Pad18)">
+    <net code="22" name="Net-(U3-Pad18)">
       <node ref="U3" pin="18"/>
     </net>
-    <net code="24" name="Net-(U3-Pad19)">
+    <net code="23" name="Net-(U3-Pad19)">
       <node ref="U3" pin="19"/>
     </net>
-    <net code="25" name="Net-(U3-Pad20)">
+    <net code="24" name="Net-(U3-Pad20)">
       <node ref="U3" pin="20"/>
     </net>
-    <net code="26" name="Net-(U3-Pad21)">
+    <net code="25" name="Net-(U3-Pad21)">
       <node ref="U3" pin="21"/>
     </net>
-    <net code="27" name="Net-(U3-Pad22)">
-      <node ref="U3" pin="22"/>
+    <net code="26" name="Net-(U3-Pad25)">
+      <node ref="U3" pin="25"/>
     </net>
-    <net code="28" name="Net-(U3-Pad23)">
+    <net code="27" name="Net-(U3-Pad23)">
       <node ref="U3" pin="23"/>
+    </net>
+    <net code="28" name="Net-(U3-Pad24)">
+      <node ref="U3" pin="24"/>
     </net>
     <net code="29" name="Net-(U3-Pad15)">
       <node ref="U3" pin="15"/>
@@ -913,29 +915,29 @@
       <node ref="U3" pin="14"/>
     </net>
     <net code="31" name="VMEM">
+      <node ref="U2" pin="6"/>
       <node ref="U1" pin="5"/>
       <node ref="R1" pin="2"/>
       <node ref="C6" pin="1"/>
       <node ref="U4" pin="1"/>
-      <node ref="U2" pin="6"/>
       <node ref="C8" pin="1"/>
       <node ref="TP1" pin="1"/>
       <node ref="R2" pin="2"/>
     </net>
     <net code="32" name="Net-(C3-Pad1)">
-      <node ref="U3" pin="12"/>
       <node ref="C3" pin="1"/>
+      <node ref="U3" pin="12"/>
       <node ref="Y1" pin="2"/>
     </net>
     <net code="33" name="Net-(C4-Pad1)">
+      <node ref="Y1" pin="1"/>
       <node ref="U3" pin="13"/>
       <node ref="C4" pin="1"/>
-      <node ref="Y1" pin="1"/>
     </net>
     <net code="34" name="Net-(AE1-Pad1)">
-      <node ref="U2" pin="1"/>
       <node ref="AE1" pin="1"/>
       <node ref="C9" pin="2"/>
+      <node ref="U2" pin="1"/>
       <node ref="C10" pin="2"/>
     </net>
     <net code="35" name="Net-(U2-Pad7)">
@@ -945,10 +947,10 @@
       <node ref="U2" pin="4"/>
     </net>
     <net code="37" name="Net-(AE1-Pad2)">
-      <node ref="AE1" pin="2"/>
-      <node ref="C9" pin="1"/>
       <node ref="U2" pin="8"/>
       <node ref="C10" pin="1"/>
+      <node ref="C9" pin="1"/>
+      <node ref="AE1" pin="2"/>
     </net>
     <net code="38" name="Net-(U4-Pad6)">
       <node ref="U4" pin="6"/>
@@ -962,15 +964,15 @@
       <node ref="U3" pin="28"/>
     </net>
     <net code="41" name="/TST">
-      <node ref="J30" pin="4"/>
       <node ref="U3" pin="8"/>
+      <node ref="J30" pin="4"/>
     </net>
     <net code="42" name="/~RST~">
       <node ref="U3" pin="9"/>
-      <node ref="SW30" pin="2"/>
       <node ref="J30" pin="6"/>
       <node ref="R31" pin="2"/>
       <node ref="C1" pin="1"/>
+      <node ref="SW30" pin="2"/>
     </net>
     <net code="43" name="/SDA">
       <node ref="U1" pin="1"/>
@@ -984,16 +986,16 @@
       <node ref="U3" pin="6"/>
     </net>
     <net code="45" name="/SCL">
-      <node ref="U2" pin="3"/>
-      <node ref="U3" pin="4"/>
-      <node ref="U1" pin="6"/>
-      <node ref="R2" pin="1"/>
       <node ref="TP2" pin="1"/>
+      <node ref="R2" pin="1"/>
+      <node ref="U3" pin="4"/>
+      <node ref="U2" pin="3"/>
+      <node ref="U1" pin="6"/>
     </net>
     <net code="46" name="/VMEM_ON">
+      <node ref="R3" pin="1"/>
       <node ref="U4" pin="3"/>
       <node ref="U3" pin="1"/>
-      <node ref="R3" pin="1"/>
     </net>
   </nets>
 </export>
