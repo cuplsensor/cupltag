@@ -55,3 +55,6 @@ Place the shorting jumper on HT07 JP30. This will cause *Programming Mode* to be
       
       ![Version string in Teraterm](ttversion.png)
 
+## Part 2
+Read [Part 2](https://github.com/cuplsensor/cuplfrontend/blob/master/docs/guides/configUARTpt2/index.md)
+
