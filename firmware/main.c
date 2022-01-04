@@ -336,8 +336,10 @@ tretcode init_state(tevent evt)
     // All other pins output low.
     P1DIR = 0xBD; P2DIR = 0xFF; P3DIR = 0xDF; P4DIR = 0xFF;
     P5DIR = 0xFF; P6DIR = 0xFF; P7DIR = 0xFF; P8DIR = 0xFF;
-    P1OUT = 0x00; P2OUT = 0x00; P3OUT = 0x00; P4OUT = 0x00;
+    P1OUT = 0x00; P2OUT = 0x00; P3OUT = 0x20; P4OUT = 0x00;
     P5OUT = 0x00; P6OUT = 0x00; P7OUT = 0x00; P8OUT = 0x00;
+    P1REN = 0x00; P2REN = 0x00; P3REN = 0x24; P4REN = 0x00;
+    P5REN = 0x00; P6REN = 0x00; P7REN = 0x00; P8REN = 0x00;
 
     P2SEL1 |= BIT6 | BIT7;                  // P2.6~P2.7: crystal pins
 
@@ -405,13 +407,13 @@ tretcode init_state(tevent evt)
     wdog_kick();
 
     // P3.5 nPRG as input
-    GPIO_setAsInputPin(
+    GPIO_setAsInputPinWithPullUpResistor(
             GPIO_PORT_P3,
             GPIO_PIN5
     );
 
     // P1.6 UART RX as input
-    GPIO_setAsInputPin(
+    GPIO_setAsInputPinWithPullDownResistor(
             GPIO_PORT_P1,
             GPIO_PIN6
     );

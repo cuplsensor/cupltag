@@ -6,4 +6,10 @@ K Temerature Humidity Sensor
 F https://www.ti.com/lit/ds/symlink/hdc2021.pdf
 $ENDCMP
 #
+$CMP ISL21080CIH333Z-TK
+D 3.3V 300nA Nanopower Voltage Reference, SOT-23
+K Nanopower Voltage Reference 3.3V
+F http://www.intersil.com/content/dam/Intersil/documents/fn75/fn7599.pdf
+$ENDCMP
+#
 #End Doc Library
