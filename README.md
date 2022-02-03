@@ -27,7 +27,7 @@ J30 is a 2.54mm pitch 2x4 way header.
 | 7   | VDD  | Input     | Power in          | +3V3                           |
 | 8   | nPRG | Input     | Prog. Mode Enable | Active low                     |
 
-## Documentation 
+## User Documentation 
 
 ### Guides
 
@@ -35,10 +35,15 @@ J30 is a 2.54mm pitch 2x4 way header.
 * [Programming](docs/firmware/programming/index.rst) the MSP430.
 * [Configuration with UART (1 of 2)](docs/guides/configUARTpt1/index.md).
 * [Configuration with UART (2 of 2)](https://github.com/cuplsensor/cuplfrontend/blob/master/docs/guides/configUARTpt2/index.md) [cuplfrontend].
+* [Configuration with NFC](docs/guides/configNFC/index.md).
 
 ### Interface
 
 * [Configuration Strings](docs/specs/configstrings.rst)  that can be written over the serial port or NFC.
+
+## Code Documentation
+
+[ReadTheDocs](https://cupl.readthedocs.io/projects/tag/en/latest/)
 
 ## Licence
 

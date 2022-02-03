@@ -34,6 +34,8 @@ J30 is a 2.54mm pitch 2x4 way header.
 * [Getting Started](docs/firmware/gettingstarted.rst) by loading the project into Code Composer.
 * [Programming](docs/firmware/programming/index.rst) the MSP430.
 * [Configuration with UART (1 of 2)](docs/guides/configUARTpt1/index.md).
+* [Configuration with UART (2 of 2)](https://github.com/cuplsensor/cuplfrontend/blob/master/docs/guides/configUARTpt2/index.md) [cuplfrontend].
+* [Configuration with NFC](docs/guides/configNFC/index.md).
 
 ### Interface
 
