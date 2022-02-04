@@ -48,7 +48,8 @@
 
 /*!
  * @brief Enable writes to program FRAM.
- * Some variables must stored in program FRAM. RAM is not suitable because data does not persist in deep sleep mode (LPM3.5).
+ *
+ * Some variables are stored in program FRAM. RAM cannot be used because state is lost in deep sleep mode (LPM3.5).
  * The Program FRAM Write Protect bit must be cleared (and interrupts disabled) before a write.
  */
 void fram_write_enable() {
@@ -58,6 +59,7 @@ void fram_write_enable() {
 
 /*!
  * @brief Disable writes to program FRAM.
+ *
  * Sets the Program FRAM Write Protect bit and re-enables interrupts.
  */
 void fram_write_disable() {
