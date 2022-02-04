@@ -35,7 +35,7 @@
 	<variableList>
 		<variable>
 			<name>CUPLCODEC</name>
-			<value>file:/C:/Users/malco/Documents/Plotsensor/wscodec</value>
+			<value>file:/P:/wscodec</value>
 		</variable>
 	</variableList>
 </projectDescription>

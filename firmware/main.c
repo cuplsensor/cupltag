@@ -46,26 +46,32 @@
 #define EXIT_STATE sc_end                               /*!< State machine exit state. */
 #define ENTRY_STATE sc_init                             /*!< State machine entry state. */
 
-#define FRAM_WRITE_ENABLE
-#define FRAM_WRITE_DISABLE
-
+/*!
+ * @brief Enable writes to program FRAM.
+ * Some variables must stored in program FRAM. RAM is not suitable because data does not persist in deep sleep mode (LPM3.5).
+ * The Program FRAM Write Protect bit must be cleared (and interrupts disabled) before a write.
+ */
 void fram_write_enable() {
-
     __disable_interrupt();      // TI advise against having interrupts enabled during a write of Program FRAM.
     SYSCFG0 = FRWPPW | DFWP;    // Clear the PFWP bit (program FRAM write protect). Leave the DFWP bit set (user FRAM).
 }
 
+/*!
+ * @brief Disable writes to program FRAM.
+ * Sets the Program FRAM Write Protect bit and re-enables interrupts.
+ */
 void fram_write_disable() {
     SYSCFG0 = FRWPPW | DFWP | PFWP;  // Set both program FRAM and user FRAM write protect bits.
     __enable_interrupt();            // Re-enable global interrupts after the FRAM write has completed.
 }
 
-volatile int timerFlag = 0;                             /*!< Flag set by the Timer Interrupt Service Routine. */
-volatile int hdcFlag = 0;                               /*!< Flag set by the HDC2021 humidity sensor data-ready Interrupt Service Routine. */
+volatile int timerFlag = 0;    /*!< Flag set by the Timer Interrupt Service Routine. */
+volatile int hdcFlag = 0;      /*!< Flag set by the HDC2021 humidity sensor data-ready Interrupt Service Routine. */
 
 
 #pragma PERSISTENT(minutecounter)
-int minutecounter = 0;                                      /*!< Incremented each time the sampling loop is run. */
+int minutecounter = 0;         /*!< Incremented each time the sampling loop is run. */
+
 
 const char ndefmsg_progmode[] = {0x03, 0x3D, 0xD1, 0x01,
                                  0x39, 0x54, 0x02, 0x65,
@@ -680,7 +686,11 @@ tretcode init_batvwait(tevent evt)
 }
 
 
-
+/*!
+ *  @brief Configure the Real Time Clock peripheral to generate one interrupt every 60 seconds.
+ *  This wakes the processor from deep sleep. When the time interval parameter is 0,
+ *  TURBO MODE is enabled and the interrupt occurs each second. This is used for testing.
+ */
 tretcode init_rtc_1min(tevent evt)
 {
     // Configure RTC
