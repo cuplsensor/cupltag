@@ -335,6 +335,27 @@ static void memoff()
     i2c_off();
 }
 
+/*!
+ *  @brief Initialise the MSP430.
+ *
+ *  All IOs are configured into an initial state. The number of IOs left as
+ *  inputs (default) must be minimised to reduce power consumption.
+ *
+ *  The slow Auxiliary Clock (ACLK) is sourced form the external 32.768 kHz crystal.
+ *  An internal 10 kHz source is used by default. This is power hungry and drifts with temperature.
+ *
+ *  Next, the Phased-Locked Loop (DCO) is made to generate an output frequency of 1 MHz, by multiplying
+ *  the external 32.768 kHz crystal frequency up by 31.
+ *
+ *  Internal clocks Main Clock (MCLK) and SMCLK used by the MSP430 are connected to the DCO output.
+ *  The MSP430 can operate at a frequency up to 24 MHz. Normally it is better to run at a higher frequency
+ *  for a shorter period of time. However, the extra current draw does result in voltage drop which can
+ *  reduce the useful battery life. 1 MHz is selected in order to minimise the voltage drop after exiting
+ *  the sleep state.
+ *
+ *  Finally, the cause of the reset is read. The program needs to know whether this is just a routine wake-up
+ *  from sleep (LPM3.5) or the result of a fault.
+ */
 tretcode init_state(tevent evt)
 {
     int error;
@@ -488,7 +509,7 @@ static tretcode waitmemon(tevent evt)
 }
 
 /*!
- *  @brief This state calls "::"<reqmemon>.
+ *  @brief This state calls :c:func:`reqmemon()`.
  */
 tretcode init_reqmemon(tevent evt)
 {
@@ -496,7 +517,7 @@ tretcode init_reqmemon(tevent evt)
 }
 
 /*!
- *  @brief This state calls "::"<waitmemon>.
+ *  @brief This state calls :c:func:`waitmemon()`.
  */
 tretcode init_waitmemon(tevent evt)
 {
