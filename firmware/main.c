@@ -315,7 +315,12 @@ static void start_timer(unsigned int intervalCycles)
     Timer_B_startCounter(TB1_BASE, TIMER_B_CONTINUOUS_MODE);
 }
 
-
+/*!
+ *  @brief Disable power to the VMEM domain.
+ *
+ *   The load switch enable pin is set low, breaking the circuit between VDD and VMEM.
+ *   This is done to save power in sleep mode. The NT3H2111 EEPROM will otherwise draw ~10uA.
+ */
 static void memoff()
 {
     // P4.2 EN as output low.
@@ -429,9 +434,15 @@ tretcode init_state(tevent evt)
     return tr_ok;
 }
 
+/*!
+ *  @brief Enable power to the VMEM domain.
+ *
+ *  Configure a pin to receive interrupts from the humidity sensor.
+ *  Set the load switch enable pin HIGH to power up the VMEM domain from VDD.
+ *
+ */
 static tretcode reqmemon(tevent evt)
 {
-    /* Power up the I2C bus. */
     // P1.1 HDC_INT as input
     GPIO_setAsInputPinWithPullDownResistor(
             GPIO_PORT_P1,
@@ -449,11 +460,18 @@ static tretcode reqmemon(tevent evt)
             GPIO_PIN2
     );
 
+    // Set a timer to generate an interrupt after 20ms.
     start_timer(2*CP10MS);
 
     return tr_ok;
 }
 
+/*!
+ *  @brief Wait for the VMEM voltage to stabilise after power on.
+ *
+ *  The timer must be started prior to calling this function. It fires an interrupt upon reaching zero.
+ *  In response, the event variable is set to evt_timerfinished, I2C is enabled and the state machine progresses.
+ */
 static tretcode waitmemon(tevent evt)
 {
     tretcode rc = tr_wait;
@@ -469,11 +487,17 @@ static tretcode waitmemon(tevent evt)
     return rc;
 }
 
+/*!
+ *  @brief This state calls "::"<reqmemon>.
+ */
 tretcode init_reqmemon(tevent evt)
 {
     return reqmemon(evt);
 }
 
+/*!
+ *  @brief This state calls "::"<waitmemon>.
+ */
 tretcode init_waitmemon(tevent evt)
 {
     return waitmemon(evt);
@@ -690,6 +714,7 @@ tretcode init_batvwait(tevent evt)
 
 /*!
  *  @brief Configure the Real Time Clock peripheral to generate one interrupt every 60 seconds.
+ *
  *  This wakes the processor from deep sleep. When the time interval parameter is 0,
  *  TURBO MODE is enabled and the interrupt occurs each second. This is used for testing.
  */
