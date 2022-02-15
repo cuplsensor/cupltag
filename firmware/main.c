@@ -316,7 +316,7 @@ static void start_timer(unsigned int intervalCycles)
 }
 
 /*!
- *  @brief Disable power to the VMEM domain.
+ *  @brief Power down the VMEM domain.
  *
  *   The load switch enable pin is set low, breaking the circuit between VDD and VMEM.
  *   This is done to save power in sleep mode. The NT3H2111 EEPROM will otherwise draw ~10uA.
@@ -344,14 +344,14 @@ static void memoff()
  *  The slow Auxiliary Clock (ACLK) is sourced form the external 32.768 kHz crystal.
  *  An internal 10 kHz source is used by default. This is power hungry and drifts with temperature.
  *
- *  Next, the Phased-Locked Loop (DCO) is made to generate an output frequency of 1 MHz, by multiplying
+ *  Next, the Phased-Locked Loop (DCO) generates an output frequency of 1 MHz, by multiplying
  *  the external 32.768 kHz crystal frequency up by 31.
  *
- *  Internal clocks Main Clock (MCLK) and SMCLK used by the MSP430 are connected to the DCO output.
- *  The MSP430 can operate at a frequency up to 24 MHz. Normally it is better to run at a higher frequency
- *  for a shorter period of time. However, the extra current draw does result in voltage drop which can
- *  reduce the useful battery life. 1 MHz is selected in order to minimise the voltage drop after exiting
- *  the sleep state.
+ *  Internal clocks MCLK and SMCLK are connected to the DCO output.
+ *
+ *  1 MHz was selected in order to minimise voltage drop after exiting the sleep state.
+ *  This in turn, increases battery life. Coin cell batteries have a relatively high source impedance. 
+ *  If the source impedance is lower, it is best to operate at a higher frequency. The MSP430 can run at up to 24 MHz.
  *
  *  Finally, the cause of the reset is read. The program needs to know whether this is just a routine wake-up
  *  from sleep (LPM3.5) or the result of a fault.
