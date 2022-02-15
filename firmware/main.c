@@ -336,7 +336,7 @@ static void memoff()
 }
 
 /*!
- *  @brief Initialise the MSP430.
+ *  @brief Initialise clocks and IOs on the MSP430.
  *
  *  All IOs are configured into an initial state. The number of IOs left as
  *  inputs (default) must be minimised to reduce power consumption.
@@ -349,9 +349,9 @@ static void memoff()
  *
  *  Internal clocks MCLK and SMCLK are connected to the DCO output.
  *
- *  1 MHz was selected in order to minimise voltage drop after exiting the sleep state.
- *  This in turn, increases battery life. Coin cell batteries have a relatively high source impedance. 
- *  If the source impedance is lower, it is best to operate at a higher frequency. The MSP430 can run at up to 24 MHz.
+ *  1 MHz was selected to minimise current draw from the high impedance coin cell battery.
+ *  This results in a lower voltage drop after exiting the sleep state. Battery life is limited by this voltage drop. 
+ *  This is not the case if the source impedance is lower. Then it is best to operate at a higher frequency: up to 24 MHz.
  *
  *  Finally, the cause of the reset is read. The program needs to know whether this is just a routine wake-up
  *  from sleep (LPM3.5) or the result of a fault.
@@ -509,7 +509,7 @@ static tretcode waitmemon(tevent evt)
 }
 
 /*!
- *  @brief This state calls :c:func:`reqmemon()`.
+ *  @brief This state calls `reqmemon()`.
  */
 tretcode init_reqmemon(tevent evt)
 {
@@ -517,13 +517,16 @@ tretcode init_reqmemon(tevent evt)
 }
 
 /*!
- *  @brief This state calls :c:func:`waitmemon()`.
+ *  @brief This state calls `waitmemon()`.
  */
 tretcode init_waitmemon(tevent evt)
 {
     return waitmemon(evt);
 }
 
+/*!
+ *  @brief Initialise the NTAG dual-interface I2C+NFC EEPROM.
+ */ 
 tretcode init_ntag(tevent evt)
 {
     tretcode rc = tr_ok;
