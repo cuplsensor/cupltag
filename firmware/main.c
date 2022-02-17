@@ -525,7 +525,19 @@ tretcode init_waitmemon(tevent evt)
 }
 
 /*!
- *  @brief Initialise the NTAG dual-interface I2C+NFC EEPROM.
+ *  @brief Initialise the dual-interface I2C+NFC EEPROM.
+ * 
+ *  A call is made to 'nt3h_check_address()' to make sure the EEPROM is 
+ *  at device address 0x55.
+ *  
+ *  The first EEPROM block is read to check for an NFC text record. If found, 
+ *  configuration strings are extracted and saved into non-volatile memory.
+ *
+ *  The capability container is written if it needs to be. These 4 bytes 
+ *  indicate that the tag contains an NDEF message.
+ * 
+ *  The programming mode select pin (nPRG) is checked. If it is 
+ *  LOW, the return code is updated. 
  */ 
 tretcode init_ntag(tevent evt)
 {
