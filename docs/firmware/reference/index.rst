@@ -7,6 +7,7 @@ Reference
 
    main
    hdc2010
+   nt3h
    i2c
    stat
    confignfc
