@@ -291,27 +291,62 @@ static void wdog_kick()
     WDTCTL = WDTPW | WDTSSEL__ACLK | WDTCNTCL | WDTIS__8192K;
 }
 
+/*!
+ *  @brief Start a single-shot timer.
+ *
+ *  An interrupt fires when the timer has finished counting. The MSP430 
+ *  can sleep in LPM3 whilst waiting for it. This saves power over delay loops.
+ *
+ *  The function is best suited to pausing execution for a short time (milliseconds).
+ *
+ *  @param[in] intervalCycles Number of 4.096 kHz clock cycles to count.
+ *
+ */
 static void start_timer(unsigned int intervalCycles)
 {
-    // Start timer in continuous mode sourced by SMCLK
+    /* Initialise a continuous mode parameters struct. */
     Timer_B_initContinuousModeParam initContParam = {0};
+    
+    /* Set the clock source to ACLK / 8 = 32.768kHz / 8. */
     initContParam.clockSource = TIMER_B_CLOCKSOURCE_ACLK;
     initContParam.clockSourceDivider = TIMER_B_CLOCKSOURCE_DIVIDER_8;
+
+    /* Disable TBIFG by de-asserting TBIE.
+     * Timer_B has 2 dedicated interrupt request outputs. Only the latter is used.:
+     * TBIFG: Multiplexed interrupt flag.
+     * CCIFG: Dedicated interrupt flag for Capture Compare Register 0.  */
     initContParam.timerInterruptEnable_TBIE = TIMER_B_TBIE_INTERRUPT_DISABLE;
+
+    /* Clear the count value and disable the timer. */
     initContParam.timerClear = TIMER_B_DO_CLEAR;
     initContParam.startTimer = false;
+
+    /* Write all settings from the parameters struct to Timer_B1. */
     Timer_B_initContinuousMode(TB1_BASE, &initContParam);
 
-    //Initialise compare mode
+    /* Clear any existing Capture Compare Register interrupts. */
     Timer_B_clearCaptureCompareInterrupt(TB1_BASE, TIMER_B_CAPTURECOMPARE_REGISTER_0);
 
+    /* Initialise a compare mode parameters struct. */
     Timer_B_initCompareModeParam initCompParam = {0};
+
+    /* Set the compare register to CCR0. */
     initCompParam.compareRegister = TIMER_B_CAPTURECOMPARE_REGISTER_0;
+
+    /* Enable interrupt CCIFG. This fires when the counter equals the compare value in CCR0. */
     initCompParam.compareInterruptEnable = TIMER_B_CAPTURECOMPARE_INTERRUPT_ENABLE;
+    
+    /* Set the timer output to the interrupt flag value. 
+     * This can be routed to an output pin, but it is not used. */
     initCompParam.compareOutputMode = TIMER_B_OUTPUTMODE_OUTBITVALUE;
+
+    /* Set the compare value to intervalCycles. */
     initCompParam.compareValue = intervalCycles;
+
+    /* Write all settings from the compare mode struct to Timer_B1. */
     Timer_B_initCompareMode(TB1_BASE, &initCompParam);
 
+    /* Start the counter from 0. */
     Timer_B_startCounter(TB1_BASE, TIMER_B_CONTINUOUS_MODE);
 }
 
@@ -323,15 +358,16 @@ static void start_timer(unsigned int intervalCycles)
  */
 static void memoff()
 {
-    // P4.2 EN as output low.
+    // Set the load switch enable pin P3.2 LOW.
     GPIO_setOutputLowOnPin(
             GPIO_PORT_P3,
             GPIO_PIN2
     );
 
-    // Stop the timer if it is running. The RTC should be used for delays when VMEM=0V
+    // Stop the timer if it is running. Use the RTC for delays when VMEM=0V.
     Timer_B_stop(TB1_BASE);
 
+    // All I2C slaves are powered down so disable the MSP430 peripheral to save power.
     i2c_off();
 }
 
@@ -360,8 +396,11 @@ tretcode init_state(tevent evt)
 {
     int error;
 
-    WDTCTL = WDTPW | WDTHOLD;               // Stop WDT
-    PMM_disableSVSH(); // Disable Supply Voltage Supervisor.
+    // Prevent watchdog interrupts during the first part of initialisation.
+    WDTCTL = WDTPW | WDTHOLD;
+
+    // Disable the Supply Voltage Supervisor.
+    PMM_disableSVSH();
 
     // Initialise IO to reduce power.
     // P1.1 HDC_INT as input
@@ -375,7 +414,8 @@ tretcode init_state(tevent evt)
     P1REN = 0x00; P2REN = 0x00; P3REN = 0x24; P4REN = 0x00;
     P5REN = 0x00; P6REN = 0x00; P7REN = 0x00; P8REN = 0x00;
 
-    P2SEL1 |= BIT6 | BIT7;                  // P2.6~P2.7: crystal pins
+    // Configure P2.6 and P2.7 as an external crystal oscillator output and input respectively.
+    P2SEL1 |= BIT6 | BIT7;
 
     // Disable the GPIO power-on default high-impedance mode
     // to activate previously configured port settings
@@ -384,10 +424,10 @@ tretcode init_state(tevent evt)
     // Read the reset cause.
     stat_rdrstcause();
 
-    //Initializes the XT1 and XT2 crystal frequencies being used
+    // Specify the external crystal frequency for the XT1 oscillator.
     CS_setExternalClockSource(CS_XT1_CRYSTAL_FREQUENCY);
 
-    //Initialize XT1. Returns STATUS_SUCCESS if initializes successfully
+    // Enable the XT1 oscillator.
     error = CS_turnOnXT1LFWithTimeout(CS_XT1_DRIVE_0, CS_XT1_TIMEOUT);
 
     if (error == STATUS_FAIL)
@@ -395,49 +435,47 @@ tretcode init_state(tevent evt)
         stat_setclockfailure();
     }
 
+    // Set Auxiliary clock ACLK = XT1 oscillator output.
     CS_initClockSignal(
             CS_ACLK,
             CS_XT1CLK_SELECT,
             CS_CLOCK_DIVIDER_1
     );
 
-    //Set DCO FLL reference = XT1
+    // Set DCO FLL reference = XT1 oscillator output.
     CS_initClockSignal(
             CS_FLLREF,
             CS_XT1CLK_SELECT,
             CS_CLOCK_DIVIDER_1
     );
 
-
-    // Set Ratio and Desired MCLK Frequency  and initialize DCO
-    // 1MHz / 32.768 kHz = 30.5
+    // Initialise the DCO by setting a Ratio (31) and Desired MCLK frequency (1 MHz)
+    // 1MHz / 32.768 kHz = ~31
     error = CS_initFLLSettle(
                 CS_SMCLK_DESIRED_FREQUENCY_IN_KHZ,
                 31
     );
-
 
     if (error == STATUS_FAIL)
     {
         stat_setclockfailure();
     }
 
-    //
-    //Set SMCLK = DCO with frequency divider of 1
+    // Set Sub Main Clock SMCLK = DCO output.
     CS_initClockSignal(
             CS_SMCLK,
             CS_DCOCLKDIV_SELECT,
             CS_CLOCK_DIVIDER_1
     );
-    //
-    //Set MCLK = DCO with frequency divider of 1
+
+    // Set Main Clock MCLK = DCO output.
     CS_initClockSignal(
             CS_MCLK,
             CS_DCOCLKDIV_SELECT,
             CS_CLOCK_DIVIDER_1
     );
 
-    // Enable watchdog timer.
+    // Enable the watchdog timer.
     wdog_kick();
 
     // P3.5 nPRG as input
@@ -461,6 +499,9 @@ tretcode init_state(tevent evt)
  *  Configure a pin to receive interrupts from the humidity sensor.
  *  Set the load switch enable pin HIGH to power up the VMEM domain from VDD.
  *
+ *  After this function has been called, the MSP430 can sleep whilst waiting for
+ *  a Timer interrupt. When this fires, the VMEM voltage should be stable.
+ *
  */
 static tretcode reqmemon(tevent evt)
 {
@@ -481,7 +522,8 @@ static tretcode reqmemon(tevent evt)
             GPIO_PIN2
     );
 
-    // Set a timer to generate an interrupt after 20ms.
+    // Use Timer_B to generate an interrupt after 20ms.
+    // This allows enough time for capacitors in the VMEM domain to charge from VDD.
     start_timer(2*CP10MS);
 
     return tr_ok;
@@ -490,8 +532,10 @@ static tretcode reqmemon(tevent evt)
 /*!
  *  @brief Wait for the VMEM voltage to stabilise after power on.
  *
- *  The timer must be started prior to calling this function. It fires an interrupt upon reaching zero.
- *  In response, the event variable is set to evt_timerfinished, I2C is enabled and the state machine progresses.
+ *  Timer_B1 must be started with start_timer() prior to calling this function.
+ *
+ *  @param[in] evt Event. When set to evt_timerfinished, I2C is enabled and the state machine progresses.
+ *
  */
 static tretcode waitmemon(tevent evt)
 {
@@ -509,7 +553,7 @@ static tretcode waitmemon(tevent evt)
 }
 
 /*!
- *  @brief This state calls `reqmemon()`.
+ *  @brief This state calls reqmemon().
  */
 tretcode init_reqmemon(tevent evt)
 {
@@ -517,7 +561,7 @@ tretcode init_reqmemon(tevent evt)
 }
 
 /*!
- *  @brief This state calls `waitmemon()`.
+ *  @brief This state calls waitmemon().
  */
 tretcode init_waitmemon(tevent evt)
 {
@@ -570,7 +614,7 @@ tretcode init_ntag(tevent evt)
     nPRG = GPIO_getInputPinValue(GPIO_PORT_P3, GPIO_PIN5);
 
     if (!nPRG) {
-        // Write programming mode NDEF text.
+        // Write programming mode NDEF text record.
         writetxt(ndefmsg_progmode, sizeof(ndefmsg_progmode));
         rc = tr_prog;
     }
@@ -578,6 +622,16 @@ tretcode init_ntag(tevent evt)
     return rc;
 }
 
+/*!
+ *  @brief Run the programming mode sub-state machine.
+ *
+ *  Enables the serial port (UART) and responds to text commands.
+ *
+ *  It is only intended that this state be entered in a production environment,
+ *  not by the end user.
+ *
+ *  The only way to exit is by resetting the processor. A soft reset command '<z>' exists.
+ */
 tretcode init_progmode(tevent evt)
 {
     tretcode rc;
@@ -586,11 +640,12 @@ tretcode init_progmode(tevent evt)
     // Kick the watchdog.
     wdog_kick();
 
+    // Run the UART child state machine.
     uartstatus = uart_run();
 
     if (uartstatus == ustat_waiting)
     {
-        rc = tr_wait;
+        rc = tr_wait; // An opportunity to sleep whilst waiting for an interrupt.
     }
     else if (uartstatus == ustat_finished)
     {
@@ -601,7 +656,7 @@ tretcode init_progmode(tevent evt)
     }
     else
     {
-        rc = tr_ok;
+        rc = tr_ok; // Re-enter this state without sleeping.
     }
 
     return rc;
