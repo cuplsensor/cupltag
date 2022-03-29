@@ -46,7 +46,7 @@
      units="mm"
      inkscape:zoom="1.2569907"
      inkscape:cx="470.09958"
-     inkscape:cy="537.08017"
+     inkscape:cy="218.85983"
      inkscape:window-x="1912"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -69,45 +69,6 @@
          offset="1"
          id="stop1084" />
     </linearGradient>
-    <inkscape:path-effect
-       effect="powerstroke"
-       id="path-effect950"
-       is_visible="true"
-       lpeversion="1"
-       offset_points="0,0.5"
-       sort_points="true"
-       interpolator_type="CubicBezierJohan"
-       interpolator_beta="0.2"
-       start_linecap_type="zerowidth"
-       linejoin_type="extrp_arc"
-       miter_limit="4"
-       scale_width="1"
-       end_linecap_type="zerowidth" />
-    <inkscape:path-effect
-       effect="powerstroke"
-       id="path-effect946"
-       is_visible="true"
-       lpeversion="1"
-       offset_points="0,0.5"
-       sort_points="true"
-       interpolator_type="CubicBezierJohan"
-       interpolator_beta="0.2"
-       start_linecap_type="zerowidth"
-       linejoin_type="extrp_arc"
-       miter_limit="4"
-       scale_width="1"
-       end_linecap_type="zerowidth" />
-    <inkscape:path-effect
-       effect="bspline"
-       id="path-effect944"
-       is_visible="true"
-       lpeversion="1"
-       weight="33.333333"
-       steps="2"
-       helper_size="0"
-       apply_no_weight="true"
-       apply_with_weight="true"
-       only_selected="false" />
     <linearGradient
        inkscape:collect="always"
        xlink:href="#linearGradient1086"
@@ -1264,7 +1225,7 @@ hY0kcBzSMETE54+04x2IuZc9NEqqS7etjao2h+NbJB0NeqnMeQ0bH5Gf2OfneFAbRLwS0NABgydz
                 <xhtml:div
                    style="display: inline-block; font-size: 22px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
                   <xhtml:font
-                     style="font-size: 20px">Dynamic NFC Tag</xhtml:font>
+                     style="font-size: 20px">Phone</xhtml:font>
                 </xhtml:div>
               </xhtml:div>
             </xhtml:div>
@@ -1387,7 +1348,7 @@ hY0kcBzSMETE54+04x2IuZc9NEqqS7etjao2h+NbJB0NeqnMeQ0bH5Gf2OfneFAbRLwS0NABgydz
                 <xhtml:div
                    style="display: inline-block; font-size: 22px; font-family: Helvetica; color: #000000; line-height: 1.2; pointer-events: all; white-space: normal; word-wrap: normal; ">
                   <xhtml:font
-                     style="font-size: 20px">Dynamic NFC Tag</xhtml:font>
+                     style="font-size: 20px">Web Application</xhtml:font>
                 </xhtml:div>
               </xhtml:div>
             </xhtml:div>
