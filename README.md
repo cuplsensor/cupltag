@@ -1,7 +1,7 @@
 # cuplTag
 The project comprises hardware and firmware. 
 
-<img src="docs/system_block_diagram.svg" alt="System block diagram" width="100%"/>
+<img src="docs/system_block_diagram.png" alt="System block diagram" width="100%"/>
 
 The firmware runs on a low power MSP430 microcontroller. It periodically reads temperature and humidity from an [HDC2022](https://www.ti.com/product/HDC2022) sensor. Readings are base-64 encoded and stored in a URL, which resides on an NFC EEPROM. 
 
