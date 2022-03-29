@@ -1,16 +1,22 @@
 # cuplTag
-The [cuplTag](https://cupl.co.uk/index.php/cupltag/) firmware runs on an [MSP430FR2155](https://www.ti.com/product/MSP430FR2155). It collects samples from an [HDC2022](https://www.ti.com/product/HDC2022) sensor 
-and passes it to the encoder part of [cuplcodec](https://github.com/cuplsensor/cuplcodec) at a used-defined time interval. The output is a URL. This is written to an NFC EEPROM 
-([NT3H2111](https://www.nxp.com/docs/en/data-sheet/NT3H2111_2211.pdf)), which is connected to a Type 6 antenna. 
-The URL origin is configurable. 
+The project comprises hardware and firmware. 
 
-Configuration parameters are written over a serial port at 9600 baud. Alternatively, these are transmitted in an NFC text record.
+<img src="docs/system_block_diagram.svg" alt="System block diagram" width="100%"/>
 
-The firmware spends much of its time in LPM3.5 in order to achieve an average current consumption ~0.5uA, which gives years of operation from a CR1220 coin cell battery.
+The firmware runs on a low power MSP430 microcontroller. It periodically reads temperature and humidity from an [HDC2022](https://www.ti.com/product/HDC2022) sensor. Readings are base-64 encoded and stored in a URL, which resides on an NFC EEPROM. 
+
+When a phone is hovered over a cuplTag, the URL is read and a web browser opens ([demo](https://www.youtube.com/watch?v=ySxt_svazHo)). No app is required. The web application decodes, timestamps and displays readings to the user. 
+
+
+
+## Key Features
+- Average current consumption ~0.5uA. Runs for years on a CR1220 battery.
+- Ease of use. No app to install on the Android / Apple phone.
+- Data are automatically uploaded to the web.
 
 [Buy one on Crowd Supply!](https://crowdsupply.com/cupl/cupltag)
 
-<img src="cupl-front.jpg" alt="Board photo" />
+<img src="cupl-front.jpg" alt="Board photo" width="50%"/>
 
 ## Pinout
 
