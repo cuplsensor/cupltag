@@ -21,3 +21,4 @@ hardware/HT07/Gerber/Releases/HT07R3/HT07_BOM_060921.xlsx
 hardware/HT07/Gerber/Releases/Parts List.ods
 *.db
 *.c~
+*.md~
