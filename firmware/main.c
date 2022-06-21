@@ -117,7 +117,11 @@ const char ndefmsg_badtrns[] =  {0x03, 0x27, 0xD1, 0x01,
                                  0x74, 0x69, 0x6F, 0x6E,
                                  0x2E, 0xFE};
 
-
+/** States in the Finite State Machine are represented by a code.
+ *  This is used each time the state machine is run, to determine:
+ *
+ *  1. Which state function to call in main().
+ *  2. The next state in lookup_transitions().  */
 typedef enum state_codes {
     sc_init,
     sc_init_reqmemon,
@@ -139,6 +143,8 @@ typedef enum state_codes {
     sc_end
 } tstate;
 
+/** Each state function returns at least one code from the list below.
+ *  This is used by lookup_transitions() to determine the next state. */
 typedef enum ret_codes { 
     tr_ok,
     tr_prog,
@@ -153,10 +159,19 @@ typedef enum ret_codes {
     tr_wait
 } tretcode;
 
+/** Events occur asynchronously to execution of the FSM. The MSP430 will typically wait for an event in sleep mode to save power.
+ *  An example is an edge on the INT (interrupt) output from a temperature sensor. This is connected to an input on the MSP430,
+ *  which is configured to call an Interrupt Service Routine (ISR). The ISR sets a flag and 'wakes up' the MSP430 from sleep mode.
+ *
+ *  The main() function is entered, flags are checked then cleared and the event variable is set according to the list of codes below.
+ *  Finally, the state function is called with the event passed as an argument.
+ *
+ *  Multiple events can occur simultaneously, but only one at-a-time is passed to the FSM.
+ *  */
 typedef enum event_codes {
-    evt_none,
-    evt_timerfinished,
-    evt_hdcint
+    evt_none,               /*!< No event has occurred. */
+    evt_timerfinished,      /*!< The timer peripheral has counted down to 0. */
+    evt_hdcint              /*!< Pin change interrupt received from the HDC2021 temperature and humidity sensor. */
 } tevent;
 
 // https://stackoverflow.com/questions/1371460/state-machines-tutorials
@@ -203,11 +218,12 @@ tretcode (* state_fcns[])(tevent) = {
 
 
 struct transition {
-    tstate      src_state;
-    tretcode    ret_code;
-    tstate      dst_state;
+    tstate      src_state; /*!< Source state. */
+    tretcode    ret_code;  /*!< Code returned after executing a state function. */
+    tstate      dst_state; /*!< Destination state. */
 };
 
+/** The state transition table. */
 struct transition state_transitions[] = {
                                          {sc_init,          tr_ok,      sc_init_reqmemon},
 
@@ -257,16 +273,29 @@ struct transition state_transitions[] = {
                                          
 };
 
-/* Look up transitions from the table for a current state and given return code. */
+
+/*!
+ *   @brief Look up the next state in the Finite State Machine.
+ *
+ *   The look-up is performed by iterating through an array of transitions.
+ *   An error state is returned if no match is found.
+ *
+ *   @param[in] curstate Current state.
+ *   @param[in] rc Code returned from the current state.
+ *   @return Next state.
+ */
 tstate lookup_transitions(tstate curstate, tretcode rc)
 {
     tstate nextstate = sc_err_msg; /* This should never be reached. */
     int i=0;
 
+    /* Read each transition in the state_transitions array. */
     for (i=0; i<sizeof(state_transitions)/sizeof(state_transitions[0]); i++)
     {
+        /* If a transition that matches the current state and return code is found... */
         if ((state_transitions[i].src_state == curstate) && (state_transitions[i].ret_code == rc))
         {
+            /* ...use it to set the next state and break out of the loop. */
             nextstate = state_transitions[i].dst_state;
             break;
         }
@@ -275,6 +304,16 @@ tstate lookup_transitions(tstate curstate, tretcode rc)
     return nextstate;
 }
 
+/*!
+ *   @brief Write an NDEF message to the NFC EEPROM.
+ *
+ *   The NDEF message normally contains one text record. It can be created with an
+ *   external program and stored as a constant array. The function is used to display simple
+ *   error messages to the end-user.
+ *
+ *   @param[in] msgptr Pointer an NDEF message array.
+ *   @param[in] len Length of the NDEF message.
+ */
 static void writetxt(const char * msgptr, int len) {
     int eepindex = 0;
     int blk;
@@ -286,8 +325,19 @@ static void writetxt(const char * msgptr, int len) {
     eep_waitwritedone();
 }
 
+/*!
+ *   @brief Kick the watchdog, to prevent it from timing out.
+ *
+ *   This is done by writing to the watchdog control register.
+ */
 static void wdog_kick()
 {
+    /*
+     * WDTPW = Watchdog password.
+     * WDTSSEL__ACLK = Use the 32.768 kHZ auxiliary clock (ACLK) as a source for the watchdog timer.
+     * WDTCNTCL = Clear the watchdog timer.
+     * WDTIS = Watchdog timer interval select. 8192K corresponds to 4 minutes, 16 seconds at 32 kHz.
+     */
     WDTCTL = WDTPW | WDTSSEL__ACLK | WDTCNTCL | WDTIS__8192K;
 }
 
@@ -343,7 +393,7 @@ static void start_timer(unsigned int intervalCycles)
     /* Set the compare value to intervalCycles. */
     initCompParam.compareValue = intervalCycles;
 
-    /* Write all settings from the compare mode struct to Timer_B1. */
+    /* Write all settings from the compare mode structure to Timer_B1. */
     Timer_B_initCompareMode(TB1_BASE, &initCompParam);
 
     /* Start the counter from 0. */
@@ -499,7 +549,7 @@ tretcode init_state(tevent evt)
  *  Configure a pin to receive interrupts from the humidity sensor.
  *  Set the load switch enable pin HIGH to power up the VMEM domain from VDD.
  *
- *  After this function has been called, the MSP430 can sleep whilst waiting for
+ *  After this function has been called, the MSP430 must sleep whilst waiting for
  *  a Timer interrupt. When this fires, the VMEM voltage should be stable.
  *
  */
@@ -630,7 +680,8 @@ tretcode init_ntag(tevent evt)
  *  It is only intended that this state be entered in a production environment,
  *  not by the end user.
  *
- *  The only way to exit is by resetting the processor. A soft reset command '<z>' exists.
+ *  The only way to exit is to reset the microcontroller. This can be done by
+ *  sending a soft reset command '<z>'.
  */
 tretcode init_progmode(tevent evt)
 {
@@ -662,7 +713,14 @@ tretcode init_progmode(tevent evt)
     return rc;
 }
 
-
+/*!
+ *  @brief Verifies that all configuration strings have been written.
+ *
+ *  The cuplTag is either configured or it is not. There are no default settings.
+ *
+ *  When configuration is incomplete, a text-based error message is written to the tag and
+ *  deep-sleep mode is entered.
+ */
 tretcode init_configcheck(tevent evt)
 {
     tretcode rc;
@@ -681,6 +739,9 @@ tretcode init_configcheck(tevent evt)
     return rc;
 }
 
+/*!
+ *  @brief Check for an error condition before continuing startup.
+ */
 tretcode init_errorcheck(tevent evt)
 {
     tretcode rc;
@@ -693,10 +754,10 @@ tretcode init_errorcheck(tevent evt)
     int resetsalltime, resetsperloop;
     unsigned int batv, batv_mv;
 
-    wdog_kick();
-    nvparams_incrcounters(); // Increment reset counter.
-    resetsalltime = nvparams_getresetsalltime();
-    resetsperloop = nvparams_getresetsperloop();
+    wdog_kick();                                    // Kick the watchdog.
+    nvparams_incrcounters();                        // Increment both reset counters.
+    resetsalltime = nvparams_getresetsalltime();    // Get the number of resets that have occurred since first use from NVM.
+    resetsperloop = nvparams_getresetsperloop();    // Get the number of resets that have occurred before the first circular buffer wraparound.
 
     // Check for low battery.
     batv = batv_measure();
@@ -789,6 +850,13 @@ tretcode init_rtc_slow(tevent evt)
     return tr_ok;
 }
 
+/*!
+ *   @brief Wait for the battery voltage to stabilise.
+ *
+ *   It takes some time for capacitors to charge after a battery is
+ *   inserted. A timer is started in the previous state. The MSP430
+ *   waits here in low power mode.
+ */
 tretcode init_batvwait(tevent evt)
 {
     // Wait for the timer flag to be raised.
@@ -806,8 +874,9 @@ tretcode init_batvwait(tevent evt)
 /*!
  *  @brief Configure the Real Time Clock peripheral to generate one interrupt every 60 seconds.
  *
- *  This wakes the processor from deep sleep. When the time interval parameter is 0,
- *  TURBO MODE is enabled and the interrupt occurs each second. This is used for testing.
+ *  This wakes the processor from deep sleep.
+ *  To enable TURBO MODE, set  the time interval parameter to 0.
+ *  One interrupt occurs each second, which is useful for testing.
  */
 tretcode init_rtc_1min(tevent evt)
 {

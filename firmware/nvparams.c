@@ -39,46 +39,108 @@ nv_t nv;
 
 unsigned int writtenfields = 0;
 
+/*!
+ *  @brief Get the 8-character alphanumeric serial string.
+ *
+ *  This is used to identify a cuplTag to the server. It is included in
+ *  the URL.
+ *
+ *  @return A pointer to the serial string.
+ */
 char * nvparams_getserial()
 {
     return nv.serial;
 }
 
+/*!
+ *  @brief Get the secret key used by cuplcodec to calculate an HMAC-MD5.
+ *
+ *  The secret key is unique per tag. It is known only to the web server and the tag.
+ *  It is used to generate a Hash based Message Authenticity Code, which prevents an
+ *  'imposter tag' from writing sample data to the web server.
+ *
+ *  @return A pointer to the secret key, which is SECKEY_LENBYTES long.
+ */
 char * nvparams_getsecretkey()
 {
     return nv.seckey;
 }
 
+/*!
+ *  @brief Get the minimum operating voltage parameter.
+ *
+ *  If the battery voltage is allowed to drop to the brown-out voltage, then the NFC EEPROM will be left with stale data.
+ *  There will be insufficient power to overwrite this with a 'low power' message, because the MSP430 will be
+ *  stuck in a reset loop.
+ *
+ *  This parameter should be slightly higher than the brown-out voltage e.g. 2200mV. When it is reached,
+ *  the sampling loop will stop, sample data removed and the user will be notified.
+ *
+ *  @return Minimum operating voltage in millivolts.
+ */
 unsigned int nvparams_getminvoltagemv(void)
 {
     return nv.minvoltagemv;
 }
 
+/*!
+ *  @brief Get the sample interval in minutes.
+ *
+ *  Temperature/humidity sensor samples are written to the circular buffer at this interval.
+ *
+ *  @return The sample interval in minutes as a 16-bit unsigned integer.
+ */
 unsigned int nvparams_getsmplintmins()
 {
     return ((unsigned int)nv.smplintervalmins[1] << 8) | (nv.smplintervalmins[0] & 0xFF);
 }
 
+/*!
+ *  @brief Get the sleep interval in minutes (deprecated).
+ *
+ *  This NVM parameter is not used.
+ *
+ *  @return The tag sleep interval in minutes.
+ */
 long nvparams_getsleepintmins()
 {
     return nv.sleepintervaldays * MINUTES_PER_DAY;
 }
 
+/*!
+ *  @brief Check that the cuplTag is fully configured.
+ *
+ *  @return 'true' if all NVM parameters have been written.
+ */
 bool nvparams_allwritten()
 {
     return (nv.allwritten == 0);
 }
 
+/*!
+ *  @brief Get resets per loop.
+ *
+ *  @return The number of resets that have occurred during the present 'loop' of the circular buffer.
+ */
 int nvparams_getresetsperloop()
 {
     return nv.resetsperloop;
 }
 
+/*!
+ *  @return The number of resets that have occurred from the factory.
+ */
 int nvparams_getresetsalltime()
 {
     return nv.resetsalltime;
 }
 
+/*!
+ *  @brief Clear resets per loop.
+ *
+ *  Clear the number of resets that has occurred during the present 'loop' of the circular buffer.
+ *  This should be done each time data wraps from the end of the circular buffer back to the start.
+ */
 void nvparams_cresetsperloop()
 {
     SYSCFG0 = FRWPPW | PFWP;                   // Program FRAM write enable
@@ -88,6 +150,9 @@ void nvparams_cresetsperloop()
     SYSCFG0 = FRWPPW | DFWP | PFWP;           // Program FRAM write protected (not writable)
 }
 
+/*!
+ *  @brief Increment both reset counters in NVM.
+ */
 void nvparams_incrcounters()
 {
     SYSCFG0 = FRWPPW | PFWP;                   // Program FRAM write enable
