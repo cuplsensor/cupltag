@@ -2,7 +2,7 @@
    :maxdepth: 2
    :caption: Firmware
 
-statechart
-startup
-operatingmodes
-reference
+   statechart
+   startup
+   operatingmodes
+   reference
