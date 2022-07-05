@@ -5,4 +5,4 @@
    statechart
    startup
    operatingmodes
-   reference
+   reference/index
