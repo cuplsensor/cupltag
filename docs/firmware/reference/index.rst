@@ -1,6 +1,8 @@
+Reference
+----------
+
 .. toctree::
    :maxdepth: 2
-   :caption: Reference
 
    main
    hdc2010
