@@ -716,7 +716,7 @@ tretcode init_progmode(tevent evt)
 /*!
  *  @brief Verifies that all configuration strings have been written.
  *
- *  The cuplTag is either configured or it is not. There are no default settings.
+ *  The state machine cannot continue unless the tag is fully configured. There are no default settings.
  *
  *  When configuration is incomplete, a text-based error message is written to the tag and
  *  deep-sleep mode is entered.
@@ -741,6 +741,13 @@ tretcode init_configcheck(tevent evt)
 
 /*!
  *  @brief Check for an error condition before continuing startup.
+ *
+ *  Do not continue if the battery voltage is below a threshold. The
+ *  state machine should not get stuck in a loop, where an attempt is made to write
+ *  to the NFC EEPROM before the micro-controller resets. This can wear out the
+ *  EEPROM.
+ *
+ *
  */
 tretcode init_errorcheck(tevent evt)
 {
@@ -756,18 +763,19 @@ tretcode init_errorcheck(tevent evt)
 
     wdog_kick();                                    // Kick the watchdog.
     nvparams_incrcounters();                        // Increment both reset counters.
-    resetsalltime = nvparams_getresetsalltime();    // Get the number of resets that have occurred since first use from NVM.
-    resetsperloop = nvparams_getresetsperloop();    // Get the number of resets that have occurred before the first circular buffer wraparound.
+    resetsalltime = nvparams_getresetsalltime();    // Get the number of resets since first use from NVM.
+    resetsperloop = nvparams_getresetsperloop();    // Get the number of resets before the first circular buffer wraparound.
 
     // Check for low battery.
-    batv = batv_measure();
-    batv_mv = batv_to_mv(batv);
-    if (batv_mv < nvparams_getminvoltagemv())
+    batv = batv_measure();                          // Use an ADC to measure the battery voltage.
+    batv_mv = batv_to_mv(batv);                     // Convert from ADC counts to millivolts.
+    if (batv_mv < nvparams_getminvoltagemv())       // Set a flag if the battery voltage is less than a threshold.
     {
         lowbatv = true;
     }
 
     // Check what has caused the reset and whether or not this is an error.
+    // Also get the status word for inclusion in the URL.
     status = stat_get(&rsterr, &rstborsvs, resetsalltime);
 
     // Cancel the reset error if a new battery has been inserted.
