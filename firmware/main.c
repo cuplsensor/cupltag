@@ -742,11 +742,21 @@ tretcode init_configcheck(tevent evt)
 /*!
  *  @brief Check for an error condition before continuing startup.
  *
- *  Do not continue if the battery voltage is below a threshold. The
+ *  An error occurs if the battery voltage is below a threshold (set in NVM). The
  *  state machine should not get stuck in a loop, where an attempt is made to write
- *  to the NFC EEPROM before the micro-controller resets. This can wear out the
+ *  to the NFC EEPROM before the micro-controller resets. Reset loops can wear out the
  *  EEPROM.
  *
+ *  An error occurs if the reset was caused by a reason other than a new battery insertion.
+ *
+ *  In the event of 10 consecutive errors:
+ *    1. Report the most recent error in the cupl URL status word.
+ *    2. Do not include any samples in the cupl URL.
+ *    3. Go to a deep sleep state that prevents another reset cycle from occurring for some time.
+ *
+ *  Otherwise:
+ *    1. Report the most recent error in the cupl URL but treat it as spurious.
+ *    2. Allow the state machine to continue.
  *
  */
 tretcode init_errorcheck(tevent evt)
