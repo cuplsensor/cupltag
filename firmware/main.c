@@ -154,8 +154,8 @@ typedef enum ret_codes {
     tr_deepsleep,
     tr_lowbat,
     tr_fail,
-    tr_samplingloop,
-    tr_por,
+    tr_samplingloop,   /*!< cuplTag is in the sampling loop. The reset was caused by an exit from LPM3.5 */
+    tr_por,            /*!< cuplTag is NOT in the sampling loop. A Power-On-Reset has occurred. */
     tr_wait
 } tretcode;
 
@@ -742,21 +742,23 @@ tretcode init_configcheck(tevent evt)
 /*!
  *  @brief Check for an error condition before continuing startup.
  *
- *  An error occurs if the battery voltage is below a threshold (set in NVM). The
- *  state machine should not get stuck in a loop, where an attempt is made to write
- *  to the NFC EEPROM before the micro-controller resets. Reset loops can wear out the
- *  EEPROM.
- *
  *  An error occurs if the reset was caused by a reason other than a new battery insertion.
  *
- *  In the event of 10 consecutive errors:
- *    1. Report the most recent error in the cupl URL status word.
- *    2. Do not include any samples in the cupl URL.
- *    3. Go to a deep sleep state that prevents another reset cycle from occurring for some time.
+ *  When the battery voltage is below a threshold (set in NVM). The
+ *  state machine should not get stuck in a loop, where an attempt is made to write
+ *  to the NFC EEPROM before the micro-controller resets. Reset loops can wear out the EEPROM.
+ *
+ *  In the event of 10 consecutive resets that result in an error, or a single low battery reading:
+ *    -# Report the most recent error in the cupl URL status word.
+ *    -# Do not include any samples in the cupl URL.
+ *    -# Go to a deep sleep state that prevents another reset cycle from occurring for some time.
  *
  *  Otherwise:
- *    1. Report the most recent error in the cupl URL but treat it as spurious.
- *    2. Allow the state machine to continue.
+ *    -# Report the most recent error in the cupl URL but treat it as spurious.
+ *    -# Allow the state machine to continue.
+ *
+ *  @return tr_deepsleep when 10 consecutive errors have occurred or the battery voltage is low.
+ *  Otherwise indicate no errors with tr_ok.
  *
  */
 tretcode init_errorcheck(tevent evt)
@@ -827,6 +829,19 @@ tretcode init_errorcheck(tevent evt)
     return rc;
 }
 
+/*!
+ *  @brief Has the reset has been caused by a routine RTC wake-up?
+ *
+ *  In the sampling loop, Wake-ups from LPM3.5 occur every minute. These are
+ *  invoked by an interrupt from the Real Time Clock peripheral.
+ *
+ *  This function first makes a call to stat_rstcause_is_lpm5wu().
+ *  Then it checks if the first integer in Backup Memory is 1. If it is, then the cuplTag is
+ *  in the sampling loop.
+ *
+ *  @return tr_samplingloop if the cuplTag is in the sampling loop.
+ *  Otherwise, indicate a power-on-reset with tr_por.
+ */
 tretcode init_wakeupcheck(tevent evt) {
     tretcode rc = tr_por;
     unsigned int samplingloop; // Indicates that the sampling loop has been entered.
@@ -845,6 +860,7 @@ tretcode init_wakeupcheck(tevent evt) {
     }
 
     // Now that BKMEM has been read, reset it.
+    // IF an unexpected error occurs the cuplTag will not be stuck in the sampling loop.
     *(unsigned int *)BKMEM_BASE = 0;
 
     return rc;
