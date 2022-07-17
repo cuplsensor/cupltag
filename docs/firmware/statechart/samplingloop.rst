@@ -26,28 +26,8 @@ If a new sample is available, this is encoded and added to the circular buffer.
         init_waitmemon --> init_waitmemon: tr_wait
 
         init_ntag #83f795 --> init_wakeupcheck: tr_ok
-        init_ntag --> init_rtc_slow: tr_newconfig
-        init_ntag --> init_progmode: tr_prog
 
-        init_progmode --> init_progmode: tr_ok
-        init_progmode --> init_progmode: tr_wait
-        init_progmode --> err_msg: tr_fail
-
-        init_wakeupcheck #83f795 --> init_rtc_slow: tr_por
-        init_wakeupcheck --> smpl_checkcounter: tr_samplingloop
-
-        init_rtc_slow  --> init_batvwait: tr_ok
-        
-        init_batvwait --> init_configcheck: tr_ok
-        init_batvwait --> init_batvwait: tr_wait
-
-        init_configcheck --> init_errorcheck: tr_ok
-        init_configcheck --> [*]: tr_deepsleep
-
-        init_errorcheck  --> init_rtc_1min: tr_ok
-        init_errorcheck --> [*]: tr_deepsleep
-
-        init_rtc_1min  --> smpl_checkcounter: tr_ok
+        init_wakeupcheck #83f795 --> smpl_checkcounter: tr_samplingloop
 
         smpl_checkcounter #83f795  --> smpl_hdcreq: tr_hdcreq
         smpl_checkcounter --> smpl_wait: tr_updatemin
