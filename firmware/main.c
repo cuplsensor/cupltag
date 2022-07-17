@@ -75,7 +75,7 @@ volatile int hdcFlag = 0;      /*!< Flag set by the HDC2021 humidity sensor data
 int minutecounter = 0;         /*!< Incremented each time the sampling loop is run. */
 
 /** Hard-coded NDEF message containing one text record
- *  Programming Mode. Connect to serial port at 9600 baud. */
+ *  "Programming Mode. Connect to serial port at 9600 baud." */
 const char ndefmsg_progmode[] = {0x03, 0x3D, 0xD1, 0x01,
                                  0x39, 0x54, 0x02, 0x65,
                                  0x6E, 0x50, 0x72, 0x6F,
@@ -94,7 +94,7 @@ const char ndefmsg_progmode[] = {0x03, 0x3D, 0xD1, 0x01,
                                  0x75, 0x64, 0x2E, 0xFE};
 
 /** Hard-coded NDEF message containing one text record
- *  Config check failed. See cuplTag docs. */
+ *  "Config check failed. See cuplTag docs." */
 const char ndefmsg_noconfig[] = {0x03, 0x2D, 0xD1, 0x01,
                                  0x29, 0x54, 0x02, 0x65,
                                  0x6E, 0x43, 0x6F, 0x6E,
@@ -109,7 +109,7 @@ const char ndefmsg_noconfig[] = {0x03, 0x2D, 0xD1, 0x01,
                                  0x63, 0x73, 0x2E, 0xFE};
 
 /** Hard-coded NDEF message containing one text record
- *  Error: Invalid state transition. */
+ *  "Error: Invalid state transition." */
 const char ndefmsg_badtrns[] =  {0x03, 0x27, 0xD1, 0x01,
                                  0x23, 0x54, 0x02, 0x65,
                                  0x6E, 0x45, 0x72, 0x72,
@@ -872,7 +872,7 @@ tretcode init_wakeupcheck(tevent evt) {
 }
 
 /*!
- *  @brief Configure the Real Time Clock to generate interrupts on a 30 minute time interval.
+ *  @brief Configure the Real Time Clock to peripheral to generate one interrupt every 30 minutes.
  *
  *  This is done to prevent the cuplTag from being stuck in the end_state when an
  *  error occurs during startup. This state must be entered before any possible transitions
@@ -923,33 +923,43 @@ tretcode init_batvwait(tevent evt)
 
 
 /*!
- *  @brief Configure the Real Time Clock peripheral to generate one interrupt every 60 seconds.
+ *  @brief Configure the Real Time Clock peripheral to generate one interrupt every minute.
  *
- *  This wakes the processor from deep sleep.
- *  To enable TURBO MODE, set  the time interval parameter to 0.
- *  One interrupt occurs each second, which is useful for testing.
+ *  The cuplTag spends most of the time in a deep sleep mode LPM3.5 to save power.
+ *  Each minute, it wakes up for a few milliseconds to collect a sample or to increment ::minutecounter.
+ *
+ *  TURBO MODE is a special feature that is useful for test purposes.
+ *  When enabled, the interrupt occurs every 3 seconds. To enable, set the time interval parameter to 0.
  */
 tretcode init_rtc_1min(tevent evt)
 {
-    // Configure RTC
-    // This must be done before any transitions to the end_state.
-    // Otherwise the MCU will get stuck in the end_state.
+    // An external 32.768 kHz crystal is the source of the Real Time Clock.
+    // There are 32768 / 1024 = 32 RTC counts per second, due to the clock PreScaler.
     if (nvparams_getsmplintmins()==0)
     {
-        // TURBO MODE.
-        // Interrupt and reset occur every 32768/1024 * 32 counts per second = 1 second.
+        // TURBO MODE is enabled.
+        // 32 RTC counts per second * 3 seconds = ~101 RTC counts between interrupts.
         RTCMOD = 101-1;
     } else {
-        // Interrupt and reset occur every 32768/1024 * 32 counts per second * 60 seconds = 1 minute.
+        // TURBO MODE is disabled.
+        // 32 RTC counts per second * 60 seconds = 1920 RTC counts between interrupts.
         RTCMOD = 1920-1;
     }
+
+    // Enable the RTC peripheral, using the external 32.768kHz crystal divided by 1024 as a clock source.
     RTCCTL = RTCSS__XT1CLK | RTCSR |RTCPS__1024;
     RTCCTL |= RTCIE; // Enable RTC interrupts
 
     return tr_ok;
 }
 
-
+/*!
+ *  @brief Write the NDEF message ::ndefmsg_badtrns to the NFC EEPROM.
+ *
+ *  Notify the developer that an invalid state machine transition has been requested.
+ *  The user should never see this. This will occur if a transition has been
+ *  requested that does not exist in the ::state_transitions table.
+ */
 tretcode err_msg(tevent evt)
 {
     /* An invalid state machine transition has been requested
@@ -1060,12 +1070,32 @@ tretcode smpl_checkcounter(tevent evt)
     return rc;
 }
 
+/*!
+ *  @brief Put the MSP430 into deep sleep LPM3.5
+ *
+ *  Minimise power consumption by powering down as much of the MSP430 (and cuplTag)
+ *  as possible. Only the Real Time Clock and Backup Memory peripherals remain powered on.
+ *
+ *  The RTC can generate an interrupt to wake the MSP430 up. When this occurs, the program starts
+ *  from a reset condition. Only the backup memory can be used to persist state.
+ *
+ *  This function disables GPIO interrupt sources. It stops any timers, in case these prevent
+ *  LPM3.5 from being entered. It disables the watchdog, because this is power hungry and the
+ *  RTC can be used instead (see init_rtc_slow()).
+ *
+ *  Most importantly it calls memoff() to make sure that the VMEM domain is powered down.
+ *
+ *  The Supply Voltage Supervisor is disabled to save power. It is not very useful in deep sleep
+ *  mode. The battery voltage will decline very little between wake-ups from the RTC.
+ *
+ *  @return ::tr_ok but this is to keep the compiler happy. Deep sleep is entered before the function returns.
+ */
 tretcode end_state(tevent evt)
 {
     /* Disable HDCint P1.1 rising edge interrupt. */
     GPIO_disableInterrupt(GPIO_PORT_P1, GPIO_PIN1);
     Timer_B_disableInterrupt(TB1_BASE);
-    /* Power down the MEM domain. */
+    /* Power down the VMEM domain. */
     memoff();
     /* Stop timers. */
     Timer_B_stop(TB0_BASE);
