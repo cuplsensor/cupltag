@@ -1,3 +1,8 @@
+.. _StateChart:
+
+State Chart
+------------
+
 .. toctree::
    :maxdepth: 2
    :caption: State Chart
@@ -7,11 +12,6 @@
    firstrun
    samplingloop
 
-
-.. _StateChart:
-
-State Chart
-~~~~~~~~~~~~~
 
 .. uml::
    :caption: The state machine in :any:`main`.
