@@ -4,8 +4,8 @@ State Chart
 ------------
 
 .. toctree::
+   :hidden:
    :maxdepth: 2
-   :caption: State Chart
    
    unconfigured
    progmode
