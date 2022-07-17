@@ -1,7 +1,13 @@
 .. _FirstRun:
 
-First Run (configured)
-~~~~~~~~~~~~~~~~~~~~~~~
+First Run 
+~~~~~~~~~~~~
+
+The following state chart shows how the cuplTag operates the first time 
+it is powered on with a good battery and a complete configuration. 
+
+After some initialisation, a sample is collected from the HDC2021 and 
+fed into cuplcodec.
 
 .. uml::
    :caption: The state machine in :any:`main`.

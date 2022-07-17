@@ -3,6 +3,13 @@
 Sampling Loop
 ~~~~~~~~~~~~~~~
 
+The cuplTag wakes up each minute. Several initialisation states are 
+skipped. The minute counter is incremented. If this equals the configured 
+sampling interval, then a sample is collected from the HDC2021.
+
+cuplcodec updates the minute counter in the cupl URL (stored on the NFC EEPROM). 
+If a new sample is available, this is encoded and added to the circular buffer.
+
 .. uml::
    :caption: The state machine runs each minute in the sampling loop.
    :width: 100%
