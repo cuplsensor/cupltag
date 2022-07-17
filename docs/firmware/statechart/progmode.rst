@@ -4,26 +4,25 @@ Programming Mode
 ~~~~~~~~~~~~~~~~~~
 
 .. uml::
-   :caption: The state machine in :any:`main`.
+   :caption: The state machine branches to :any:`init_progmode` when the nPRG pin is LOW.
    :width: 100%
 
    @startuml
-        !$grn  = "#83f795"
         hide empty description
         [*] --> init_state
 
-        init_state $grn --> init_reqmemon: tr_ok
+        init_state #83f795 --> init_reqmemon: tr_ok
 
-        init_reqmemon $grn --> init_waitmemon: tr_ok
+        init_reqmemon #83f795 --> init_waitmemon: tr_ok
 
-        init_waitmemon $grn --> init_ntag: tr_ok
+        init_waitmemon #83f795 --> init_ntag: tr_ok
         init_waitmemon --> init_waitmemon: tr_wait
 
-        init_ntag $grn --> init_wakeupcheck: tr_ok
+        init_ntag #83f795 --> init_wakeupcheck: tr_ok
         init_ntag --> init_rtc_slow: tr_newconfig
         init_ntag --> init_progmode: tr_prog
 
-        init_progmode $grn --> init_progmode: tr_ok
+        init_progmode #83f795 --> init_progmode: tr_ok
         init_progmode --> init_progmode: tr_wait
         init_progmode --> err_msg: tr_fail
 

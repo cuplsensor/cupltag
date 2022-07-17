@@ -1,25 +1,24 @@
 .. _Unconfigured:
 
-Incomplete Configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Not Configured
+~~~~~~~~~~~~~~~
 
 .. uml::
    :caption: Startup does not continue when the configuration is incomplete.
    :width: 100%
 
    @startuml
-        !$grn  = "#83f795"
         hide empty description
         [*] --> init_state
 
-        init_state $grn --> init_reqmemon: tr_ok
+        init_state #83f795 --> init_reqmemon: tr_ok
 
-        init_reqmemon $grn --> init_waitmemon: tr_ok
+        init_reqmemon #83f795 --> init_waitmemon: tr_ok
 
-        init_waitmemon $grn --> init_ntag: tr_ok
+        init_waitmemon #83f795 --> init_ntag: tr_ok
         init_waitmemon --> init_waitmemon: tr_wait
 
-        init_ntag $grn --> init_wakeupcheck: tr_ok
+        init_ntag #83f795 --> init_wakeupcheck: tr_ok
         init_ntag --> init_rtc_slow: tr_newconfig
         init_ntag --> init_progmode: tr_prog
 
@@ -30,12 +29,12 @@ Incomplete Configuration
         init_wakeupcheck --> init_rtc_slow: tr_por
         init_wakeupcheck --> smpl_checkcounter: tr_samplingloop
 
-        init_rtc_slow $grn  --> init_batvwait: tr_ok
+        init_rtc_slow #83f795  --> init_batvwait: tr_ok
         
-        init_batvwait $grn --> init_configcheck: tr_ok
+        init_batvwait #83f795 --> init_configcheck: tr_ok
         init_batvwait --> init_batvwait: tr_wait
 
-        init_configcheck $grn --> init_errorcheck: tr_ok
+        init_configcheck #83f795 --> init_errorcheck: tr_ok
         init_configcheck --> [*]: tr_deepsleep
 
         init_errorcheck  --> init_rtc_1min: tr_ok
