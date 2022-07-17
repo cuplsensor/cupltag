@@ -1,3 +1,13 @@
+.. toctree::
+   :maxdepth: 2
+   :caption: State Chart
+   
+   unconfigured
+   progmode
+   firstrun
+   samplingloop
+
+
 .. _StateChart:
 
 State Chart
