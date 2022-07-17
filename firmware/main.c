@@ -74,7 +74,8 @@ volatile int hdcFlag = 0;      /*!< Flag set by the HDC2021 humidity sensor data
 #pragma PERSISTENT(minutecounter)
 int minutecounter = 0;         /*!< Incremented each time the sampling loop is run. */
 
-
+/** Hard-coded NDEF message containing one text record
+ *  Programming Mode. Connect to serial port at 9600 baud. */
 const char ndefmsg_progmode[] = {0x03, 0x3D, 0xD1, 0x01,
                                  0x39, 0x54, 0x02, 0x65,
                                  0x6E, 0x50, 0x72, 0x6F,
@@ -92,6 +93,8 @@ const char ndefmsg_progmode[] = {0x03, 0x3D, 0xD1, 0x01,
                                  0x30, 0x20, 0x62, 0x61,
                                  0x75, 0x64, 0x2E, 0xFE};
 
+/** Hard-coded NDEF message containing one text record
+ *  Config check failed. See cuplTag docs. */
 const char ndefmsg_noconfig[] = {0x03, 0x2D, 0xD1, 0x01,
                                  0x29, 0x54, 0x02, 0x65,
                                  0x6E, 0x43, 0x6F, 0x6E,
@@ -105,6 +108,8 @@ const char ndefmsg_noconfig[] = {0x03, 0x2D, 0xD1, 0x01,
                                  0x67, 0x20, 0x64, 0x6F,
                                  0x63, 0x73, 0x2E, 0xFE};
 
+/** Hard-coded NDEF message containing one text record
+ *  Error: Invalid state transition. */
 const char ndefmsg_badtrns[] =  {0x03, 0x27, 0xD1, 0x01,
                                  0x23, 0x54, 0x02, 0x65,
                                  0x6E, 0x45, 0x72, 0x72,
@@ -123,24 +128,24 @@ const char ndefmsg_badtrns[] =  {0x03, 0x27, 0xD1, 0x01,
  *  1. Which state function to call in main().
  *  2. The next state in lookup_transitions().  */
 typedef enum state_codes {
-    sc_init,
-    sc_init_reqmemon,
-    sc_init_waitmemon,
-    sc_init_ntag,
-    sc_init_progmode,
-    sc_init_configcheck,
-    sc_init_errorcheck,
-    sc_init_wakeupcheck,
-    sc_init_batvwait,
-    sc_init_rtc_slow,
-    sc_init_rtc_1min,
-    sc_smpl_checkcounter,
-    sc_smpl_hdcreq,
-    sc_smpl_hdcwait,
-    sc_smpl_hdcread,
-    sc_smpl_wait,
-    sc_err_msg,
-    sc_end
+    sc_init,                    /*!< State code for init_state() */
+    sc_init_reqmemon,           /*!< State code for init_reqmemon() */
+    sc_init_waitmemon,          /*!< State code for init_waitmemon() */
+    sc_init_ntag,               /*!< State code for init_ntag() */
+    sc_init_progmode,           /*!< State code for init_progmode() */
+    sc_init_configcheck,        /*!< State code for init_configcheck() */
+    sc_init_errorcheck,         /*!< State code for init_errorcheck() */
+    sc_init_wakeupcheck,        /*!< State code for init_wakeupcheck() */
+    sc_init_batvwait,           /*!< State code for init_batvwait() */
+    sc_init_rtc_slow,           /*!< State code for init_rtc_slow() */
+    sc_init_rtc_1min,           /*!< State code for init_rtc_1min() */
+    sc_smpl_checkcounter,       /*!< State code for smpl_checkcounter() */
+    sc_smpl_hdcreq,             /*!< State code for smpl_hdcreq() */
+    sc_smpl_hdcwait,            /*!< State code for smpl_hdcwait() */
+    sc_smpl_hdcread,            /*!< State code for smpl_hdcread() */
+    sc_smpl_wait,               /*!< State code for smpl_wait() */
+    sc_err_msg,                 /*!< State code for err_msg() */
+    sc_end                      /*!< State code for end_state() */
 } tstate;
 
 /** Each state function returns at least one code from the list below.
@@ -151,12 +156,12 @@ typedef enum ret_codes {
     tr_newconfig,
     tr_hdcreq,
     tr_updatemin,
-    tr_deepsleep,
+    tr_deepsleep,      /*!< cuplTag should enter a deep sleep state LPM3.5 */
     tr_lowbat,
     tr_fail,
     tr_samplingloop,   /*!< cuplTag is in the sampling loop. The reset was caused by an exit from LPM3.5 */
     tr_por,            /*!< cuplTag is NOT in the sampling loop. A Power-On-Reset has occurred. */
-    tr_wait
+    tr_wait            /*!< cuplTag should enter a sleep state, such as LPM0, to wait for an event. */
 } tretcode;
 
 /** Events occur asynchronously to execution of the FSM. The MSP430 will typically wait for an event in sleep mode to save power.
@@ -194,7 +199,7 @@ tretcode smpl_wait(tevent);
 tretcode err_msg(tevent);
 tretcode end_state(tevent);
 
-/* array and enum below must be in sync! */
+/* This array must be in sync with the ::state_codes enumerator above.  */
 tretcode (* state_fcns[])(tevent) = {
                           init_state,
                           init_reqmemon,
@@ -757,8 +762,8 @@ tretcode init_configcheck(tevent evt)
  *    -# Report the most recent error in the cupl URL but treat it as spurious.
  *    -# Allow the state machine to continue.
  *
- *  @return tr_deepsleep when 10 consecutive errors have occurred or the battery voltage is low.
- *  Otherwise indicate no errors with tr_ok.
+ *  @return ::tr_deepsleep when 10 consecutive errors have occurred or the battery voltage is low.
+ *  Otherwise indicate no errors with ::tr_ok.
  *
  */
 tretcode init_errorcheck(tevent evt)
@@ -839,8 +844,8 @@ tretcode init_errorcheck(tevent evt)
  *  Then it checks if the first integer in Backup Memory is 1. If it is, then the cuplTag is
  *  in the sampling loop.
  *
- *  @return tr_samplingloop if the cuplTag is in the sampling loop.
- *  Otherwise, indicate a power-on-reset with tr_por.
+ *  @return ::tr_samplingloop if the cuplTag is in the sampling loop.
+ *  Otherwise, indicate a power-on-reset with ::tr_por.
  */
 tretcode init_wakeupcheck(tevent evt) {
     tretcode rc = tr_por;
@@ -866,12 +871,21 @@ tretcode init_wakeupcheck(tevent evt) {
     return rc;
 }
 
+/*!
+ *  @brief Configure the Real Time Clock to generate interrupts on a 30 minute time interval.
+ *
+ *  This is done to prevent the cuplTag from being stuck in the end_state when an
+ *  error occurs during startup. This state must be entered before any possible transitions
+ *  to the end_state.
+ *
+ *  Whatever the error, the cuplTag must wake up and try to start up again.
+ *  A long time interval has been chosen so that the battery is not depleted.
+ */
 tretcode init_rtc_slow(tevent evt)
 {
-    // Configure RTC
-    // Interrupt and reset happen every 1024/32768 * 32 * 60 * 30 = 30 minutes.
-    // This must be done before any transitions to the end_state.
-    // Otherwise the MCU can get stuck in the end_state.
+    // An external 32.768 kHz crystal is the source of the Real Time Clock.
+    // There are 32768 / 1024 = 32 RTC counts per second, due to the clock PreScaler.
+    // 32 RTC counts per second * 60 seconds per minute * 30 minutes = 57600 RTC counts between interrupts.
     RTCMOD = 57600-1;
     RTCCTL = RTCSS__XT1CLK | RTCSR |RTCPS__1024;
     RTCCTL |= RTCIE; // Enable RTC interrupts
@@ -890,6 +904,9 @@ tretcode init_rtc_slow(tevent evt)
  *   It takes some time for capacitors to charge after a battery is
  *   inserted. A timer is started in the previous state. The MSP430
  *   waits here in low power mode.
+ *
+ *   @param[in] evt Event. When set to ::evt_timerfinished the state machine progresses.
+ *   @return ::tr_ok when the timer has finished. Otherwise ::tr_wait.
  */
 tretcode init_batvwait(tevent evt)
 {
