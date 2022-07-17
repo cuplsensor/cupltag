@@ -5,7 +5,6 @@ Programming Mode
 
 .. uml::
    :caption: The state machine branches to :any:`init_progmode` when the nPRG pin is LOW.
-   :width: 100%
 
    @startuml
         hide empty description

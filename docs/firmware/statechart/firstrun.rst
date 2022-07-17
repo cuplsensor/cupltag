@@ -11,7 +11,6 @@ fed into cuplcodec.
 
 .. uml::
    :caption: The state machine in :any:`main`.
-   :width: 100%
 
    @startuml
         hide empty description

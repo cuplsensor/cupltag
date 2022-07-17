@@ -5,7 +5,6 @@ Not Configured
 
 .. uml::
    :caption: Startup does not continue when the configuration is incomplete.
-   :width: 100%
 
    @startuml
         hide empty description

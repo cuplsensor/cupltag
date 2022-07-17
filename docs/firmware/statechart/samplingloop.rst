@@ -12,7 +12,6 @@ If a new sample is available, this is encoded and added to the circular buffer.
 
 .. uml::
    :caption: The state machine runs each minute in the sampling loop.
-   :width: 100%
 
    @startuml
         hide empty description
@@ -41,7 +40,5 @@ If a new sample is available, this is encoded and added to the circular buffer.
         smpl_hdcread --> [*]: tr_lowbat
 
         smpl_wait #83f795  --> [*]: tr_deepsleep
-
-        err_msg  --> [*]: tr_deepsleep
 
         @enduml
