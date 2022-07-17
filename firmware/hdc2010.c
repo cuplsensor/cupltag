@@ -22,6 +22,19 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file hdc2010.c
+ * @author Malcolm Mackay
+ * @brief A driver for the Texas Instruments HDC2021/22 temperature and humidity sensor.
+ *
+ * Initialises the HDC2021 and starts a conversion.
+ *
+ * Reads temperature and humidity as 12-bit integers.
+ *
+ * Product page: https://www.ti.com/product/HDC2021
+ *
+ */
+
 #include "driverlib.h"
 #include "hdc2010.h"
 

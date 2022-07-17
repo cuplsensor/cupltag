@@ -22,6 +22,24 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file main.c
+ * @author Malcolm Mackay
+ * @brief Top-level Finite State Machine for controlling the MSP430 and cuplTag as a whole.
+ *
+ * A Finite State Machine is defined in this file and run from main(). This has several features.
+ *
+ * It makes calls to drivers for communicating with the HDC2022 humidity sensor and the NT3H2111 NFC EEPROM.
+ *
+ * It controls entry into the 'programming mode' sub state machine, where configuration strings can be written
+ * using a serial port.
+ *
+ * It reads configuration strings from the NFC EEPROM if any are present.
+ *
+ * It collects samples from an HDC2022 at a fixed time interval and passes these to the cuplcodec encoder.
+ *
+ */
+
 #include "driverlib.h"
 #include "hdc2010.h"
 #include "sample.h"
