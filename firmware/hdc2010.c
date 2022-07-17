@@ -25,6 +25,7 @@
 /**
  * @file hdc2010.c
  * @author Malcolm Mackay
+ *
  * @brief A driver for the Texas Instruments HDC2021/22 temperature and humidity sensor.
  *
  * Initialises the HDC2021 and starts a conversion.

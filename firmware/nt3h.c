@@ -25,6 +25,7 @@
 /**
  * @file nt3h.c
  * @author Malcolm Mackay
+ *
  * @brief A driver for the NXP NT3H2111 NFC EEPROM
  *
  * Reads and writes registers and memory on the NT3H2111 EEPROM using I2C.

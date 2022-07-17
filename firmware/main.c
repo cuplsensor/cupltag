@@ -25,6 +25,7 @@
 /**
  * @file main.c
  * @author Malcolm Mackay
+ *
  * @brief Top-level Finite State Machine for controlling the MSP430 and cuplTag as a whole.
  *
  * A Finite State Machine is defined in this file and run from main(). This has several features.
