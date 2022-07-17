@@ -3,8 +3,10 @@
 State Chart
 ------------
 
+This might look intimidating at first. Sub-sections cover the most common 
+progressions through the state chart.
+
 .. toctree::
-   :hidden:
    :maxdepth: 2
    
    unconfigured
