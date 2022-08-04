@@ -1,0 +1,6 @@
+HDC2021
+~~~~~~~~~
+
+.. doxygenfile:: hdc2021.h
+
+.. doxygenfile:: hdc2021.c

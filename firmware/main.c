@@ -42,7 +42,7 @@
  */
 
 #include "driverlib.h"
-#include "hdc2010.h"
+#include "hdc2021.h"
 #include "sample.h"
 #include "comms_uart.h"
 #include "confignfc.h"
@@ -173,7 +173,7 @@ typedef enum ret_codes {
     tr_ok,
     tr_prog,
     tr_newconfig,
-    tr_hdcreq,
+    tr_hdcreq,         /*!< Request a sample from the HDC2021 sensor. */
     tr_updatemin,
     tr_deepsleep,      /*!< cuplTag should enter a deep sleep state LPM3.5 */
     tr_lowbat,
@@ -989,19 +989,33 @@ tretcode err_msg(tevent evt)
     return tr_deepsleep;
 }
 
+/*!
+ *  @brief Request a sample from the HDC2021 sensor.
+ *
+ *  A sample is requested by the MSP430 with hdc2020_startconv(). When data is ready, the HDC2021 makes a HIGH to LOW transition on its INT pin.
+ *  To save power, the MSP430 sleeps whilst the measurement is taken.
+ *
+ *  The MSP430 pin connected to INT is made to raise an interrupt when a falling edge is detected.
+ */
 tretcode smpl_hdcreq(tevent evt)
 {
-    /* Enable HDCint P1.1 rising edge interrupt. */
+    /* Enable HDCint P1.1 falling edge interrupt. */
     P1IFG &= ~BIT1; // Clear flag.
-    P1IES |= BIT1; // Falling edge detect.
+    P1IES |= BIT1;  // Falling edge detect.
 
-    hdc2010_startconv();
+    hdc2021_startconv();
 
+    /* Enable the interrupt on P1.1 */
     GPIO_enableInterrupt(GPIO_PORT_P1, GPIO_PIN1);
 
     return tr_ok;
 }
 
+/*!
+ *  @brief Wait in LPM3 whilst waiting for a data ready interrupt from the HDC2021 sensor.
+ *
+ *  @return ::tr_ok when a DRDY interrupt has been detected. Otherwise return ::tr_wait to indicate that the MSP430 should sleep.
+ */
 tretcode smpl_hdcwait(tevent evt)
 {
     tretcode rc = tr_wait;
@@ -1024,7 +1038,7 @@ tretcode smpl_hdcread(tevent evt)
     GPIO_disableInterrupt(GPIO_PORT_P1, GPIO_PIN1);
 
     // Read temperature and humidity from the sensor.
-    hdc2010_read_temp(&temp, &rh);
+    hdc2021_read_temp(&temp, &rh);
 
     if (enc_pushsample(temp, rh) > 0)
     {

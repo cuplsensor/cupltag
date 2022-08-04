@@ -5,7 +5,7 @@ Reference
    :maxdepth: 2
 
    main
-   hdc2010
+   hdc2021
    nt3h
    i2c
    stat

@@ -1,6 +1,0 @@
-HDC2010
-~~~~~~~~~
-
-.. doxygenfile:: hdc2010.h
-
-.. doxygenfile:: hdc2010.c
