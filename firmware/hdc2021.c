@@ -26,23 +26,20 @@
  * @file hdc2021.c
  * @author Malcolm Mackay
  *
- * @brief A driver for the Texas Instruments HDC2021 temperature and humidity sensor.
+ * @brief A driver for the <a href="https://www.ti.com/product/HDC2021">Texas Instruments HDC2021</a> temperature and humidity sensor.
  *
  * Only the basic functionality is needed - to start the sensor in one-shot mode and
  * collect a temperature and humidity measurement.
  *
- * It is compatible with the HDC2022 and HDC2080 parts, which are electrically identical.
+ * It is compatible with the <a href="https://www.ti.com/product/HDC2022">HDC2022</a> and <a href="https://www.ti.com/product/HDC2080">HDC2080</a> parts, which are electrically identical.
  *
- * Product page: https://www.ti.com/product/HDC2021
- * Product page: https://www.ti.com/product/HDC2022
- * Product page: https://www.ti.com/product/HDC2080
  */
 
 #include "driverlib.h"
 #include "hdc2021.h"
 
 
-#define DEVADDR                     0x40    /*!< HDC2021 I2C bus device address. */
+
 
 #define TEMPL_REGADDR               0x00    /*!< Temperature Low register address. */
 #define TEMPH_REGADDR               0x01    /*!< Temperature High register address. */
@@ -84,15 +81,15 @@ int hdc2021_startconv()
     int measconf = 0;
 
     // Enable interrupt pin, active low.
-    i2c_write8(DEVADDR, DEVCONF_REGADDR, DEVCONF_DRDY_INTEN_BIT);
+    i2c_write8(HDC_DEVADDR, DEVCONF_REGADDR, DEVCONF_DRDY_INTEN_BIT);
     // Enable DRDY interrupt
-    i2c_write8(DEVADDR, INTEN_REGADDR, INTEN_DRDYEN_BIT);
+    i2c_write8(HDC_DEVADDR, INTEN_REGADDR, INTEN_DRDYEN_BIT);
     // Clear any existing interrupt by reading the status register.
-    i2c_read8(DEVADDR, STAT_REGADDR);
+    i2c_read8(HDC_DEVADDR, STAT_REGADDR);
 
     // Trigger a measurement by setting the MEAS_TRIG bit in the MEASCONF register.
     measconf |= MEASCONF_MEAS_TRIG_BIT;
-    i2c_write8(DEVADDR, MEASCONF_REGADDR, measconf);
+    i2c_write8(HDC_DEVADDR, MEASCONF_REGADDR, measconf);
 
     return err;
 }
@@ -107,16 +104,16 @@ int hdc2021_init()
     // Set the Soft Reset bit. Keep the CC bits clear to enable one-shot mode.
     devconf = DEVCONF_SOFT_RES_BIT;
     // Write to the DEVCONF register.
-    i2c_write8(DEVADDR, DEVCONF_REGADDR, devconf);
+    i2c_write8(HDC_DEVADDR, DEVCONF_REGADDR, devconf);
 
     return 0;
 }
 
 /*!
- * @brief Read 12-bit temperature and humidity ADC readings from the HDC2021.
+ * @brief Read temperature and humidity from the HDC2021.
  *
- * @param[out] temp12b Pointer to a variable for storing raw 12-bit temperature.
- * @param[out] rh12b Pointer to a variable for storing raw 12-bit relative humidity.
+ * @param[out] temp12b Pointer to a variable for storing the raw 12-bit temperature.
+ * @param[out] rh12b Pointer to a variable for storing the raw 12-bit relative humidity.
  */
 uint32_t hdc2021_read_temp(int * temp12b, int * rh12b)
 {
@@ -124,7 +121,7 @@ uint32_t hdc2021_read_temp(int * temp12b, int * rh12b)
     uint32_t rh16b = 0;
 
     // Populate temp16b and rh16b with a 32-bit I2C read starting from TEMPL_REGADDR.
-    i2c_read32(DEVADDR, TEMPL_REGADDR, (uint16_t *)&temp16b, (uint16_t *)&rh16b);
+    i2c_read32(HDC_DEVADDR, TEMPL_REGADDR, (uint16_t *)&temp16b, (uint16_t *)&rh16b);
 
     // Remove the 4 most-significant bits from the relative humidity reading.
     rh16b = rh16b >> 4;
@@ -145,6 +142,6 @@ uint32_t hdc2021_read_temp(int * temp12b, int * rh12b)
 int hdc2021_read_whoami()
 {
     volatile int test = 100;
-    test = i2c_read16(DEVADDR, DEVIDL_REGADDR);
+    test = i2c_read16(HDC_DEVADDR, DEVIDL_REGADDR);
     return test;
 }

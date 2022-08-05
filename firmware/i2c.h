@@ -27,6 +27,9 @@
 
 #include "driverlib.h"
 
+#define HDC_DEVADDR     0x40    /*!< HDC2021 I2C bus device address. */
+#define NT3H_DEVADDR    0x55    /*!< NFC EEPROM I2C bus device address. */
+
 void i2c_init();
 void i2c_off();
 
