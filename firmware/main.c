@@ -1038,7 +1038,7 @@ tretcode smpl_hdcread(tevent evt)
     GPIO_disableInterrupt(GPIO_PORT_P1, GPIO_PIN1);
 
     // Read temperature and humidity from the sensor.
-    hdc2021_read_temp(&temp, &rh);
+    hdc2021_read_temprh(&temp, &rh);
 
     if (enc_pushsample(temp, rh) > 0)
     {

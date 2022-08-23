@@ -28,7 +28,7 @@
 #include "i2c.h"
 
 int hdc2021_init();
-uint32_t hdc2021_read_temp(int *, int *);
+uint32_t hdc2021_read_temprh(int *, int *);
 int hdc2021_read_whoami();
 int hdc2021_startconv();
 #endif /* HDC2021_H_ */

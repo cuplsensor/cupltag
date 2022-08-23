@@ -24,7 +24,6 @@
 
 /**
  * @file hdc2021.c
- * @author Malcolm Mackay
  *
  * @brief A driver for the <a href="https://www.ti.com/product/HDC2021">Texas Instruments HDC2021</a> temperature and humidity sensor.
  *
@@ -115,13 +114,13 @@ int hdc2021_init()
  * @param[out] temp12b Pointer to a variable for storing the raw 12-bit temperature.
  * @param[out] rh12b Pointer to a variable for storing the raw 12-bit relative humidity.
  */
-uint32_t hdc2021_read_temp(int * temp12b, int * rh12b)
+uint32_t hdc2021_read_temprh(int * temp12b, int * rh12b)
 {
     uint32_t temp16b = 0;
     uint32_t rh16b = 0;
 
     // Populate temp16b and rh16b with a 32-bit I2C read starting from TEMPL_REGADDR.
-    i2c_read32(HDC_DEVADDR, TEMPL_REGADDR, (uint16_t *)&temp16b, (uint16_t *)&rh16b);
+    i2c_read16x2(HDC_DEVADDR, TEMPL_REGADDR, (uint16_t *)&temp16b, (uint16_t *)&rh16b);
 
     // Remove the 4 most-significant bits from the relative humidity reading.
     rh16b = rh16b >> 4;

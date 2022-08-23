@@ -22,74 +22,117 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file i2c.c
+ * @author Malcolm Mackay
+ *
+ * @brief Communicates with devices on an I2C bus.
+ *
+ * Configures the EUSCI peripheral as an I2C master. Up to 16 bytes can be written to or read from a memory address on the I2C slave.
+ *
+ * Some devices embed up to 16 registers within each memory address. There is a function for reading one register only.
+ *
+ */
+
 #include "i2c.h"
 
 
-volatile uint8_t buffer[16] = {0};
-volatile uint8_t bytesLength = 0;
-volatile uint8_t gbl_regOffset = 0;
+volatile uint8_t buffer[16] = {0};       /*!< Read or write buffer. This is declared volatile because it is accessed from an ISR. */
+volatile uint8_t bytesLength = 0;        /*!< Transaction length. This is declared volatile because it is read from an ISR. */
+volatile uint8_t gbl_regOffset = 0;      /*!< Memory address. Volatile because it is read from an ISR. */
 volatile bool restartTx = false;
 volatile bool nackFlag = false;
 volatile bool stopFlag = false;
 volatile bool restartRx = false;
 
-#define EUSCI_BASE  EUSCI_B0_BASE
+#define EUSCI_BASE  EUSCI_B0_BASE         /*!< Base address of the EUSCI peripheral. */
 
-
+/*!
+ * @brief Initialise the EUSCI peripheral and I/O pins for I2C.
+ *
+ * Weak pull-up resistors must be fitted to the I/O pins.
+ *
+ */
 void i2c_init()
 {
-    /* Select Port 1
-    * Set Pin 6, 7 to input Secondary Module Function, (UCB2SIMO/UCB2SDA, UCB2SOMI/UCB2SCL).
-    */
+    // Configure P1.2 and P1.3 to connect to the EUSCI peripheral.
     GPIO_setAsPeripheralModuleFunctionInputPin(
             GPIO_PORT_P1,
             GPIO_PIN2 + GPIO_PIN3,
             GPIO_PRIMARY_MODULE_FUNCTION
     );
 
-    //Initialize Master
+    // Initialize the EUSCI peripheral.
     EUSCI_B_I2C_initMasterParam param = {0};
+    // Clock the peripheral from SMCLK (1 MHz)
     param.selectClockSource = EUSCI_B_I2C_CLOCKSOURCE_SMCLK;
     param.i2cClk = CS_getSMCLK();
+    // Set data rate to 100 kHz.
     param.dataRate = 100000;
+    // Disable automatic stop.
     param.byteCounterThreshold = 16;
     param.autoSTOPGeneration = EUSCI_B_I2C_NO_AUTO_STOP;
+    // Write settings to the EUSCI module.
     EUSCI_B_I2C_initMaster(EUSCI_BASE, &param);
-
 }
 
+/*!
+ * @brief Put the EUSCI module into reset. Enable pull-downs on the I/O pins.
+ *
+ * Floating pins waste power.
+ */
 void i2c_off() {
     EUSCI_B_I2C_disable(EUSCI_BASE);
 
     GPIO_setAsInputPinWithPullDownResistor(GPIO_PORT_P1, GPIO_PIN2 + GPIO_PIN3);
 }
 
-uint8_t i2c_write8(uint8_t slaveAddr, uint8_t regOffset, uint8_t writeData)
+/*!
+ * @brief Write one byte to the I2C device.
+ *
+ * Blocks until the write has completed.
+ *
+ * @param[in] sa slave address
+ * @param[in] mema memory address
+ * @param[in] txbyte byte to write
+ */
+uint8_t i2c_write8(uint8_t sa, uint8_t mema, uint8_t txbyte)
 {
-    while(i2c_write_block(slaveAddr, regOffset, 1, &writeData)==0);
+    while(i2c_write_block(sa, mema, 1, &txbyte)==0);
 
     return 0;
 }
 
-int i2c_readreg(uint8_t slaveAddr, uint8_t mema, uint8_t rega)
+/*!
+ * @brief Read one register on an I2C device.
+ *
+ * @param[in] sa slave address
+ * @param[in] mema memory address
+ * @param[in] rega register address
+ *
+ * @return one byte of register data.
+ */
+int i2c_readreg(uint8_t sa, uint8_t mema, uint8_t rega)
 {
-    /* If I2C bus is currently being used
-         * do not attempt to manipulate any I2C vars or registers */
     uint8_t rxData = 0;
 
-    i2c_read_block(slaveAddr, mema, 1, &rxData, rega);
+    i2c_read_block(sa, mema, 1, &rxData, rega);
 
     return rxData;
 }
 
-void i2c_send_start(uint8_t slaveAddr)
-{
-    EUSCI_B_I2C_masterSendStart(EUSCI_BASE);
-    EUSCI_B_I2C_masterSendStart(EUSCI_BASE);
-    EUSCI_B_I2C_masterSendStart(EUSCI_BASE);
-}
-
-int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, uint8_t * txData)
+/*!
+ * @brief Write N bytes to the I2C device.
+ *
+ * When NBYTES == 0: START | WRITE SA | MEMA | STOP
+ * When NBYTES >= 1: START | WRITE SA | MEMA | TXDATA[0] | TXDATA[...] | TXDATA[NBYTES-1] | STOP
+ *
+ * @param[in] sa slave address.
+ * @param[in] mema memory address.
+ * @param[in] nbytes the number of bytes to write.
+ * @param[in] txdata a pointer to the array of bytes to write.
+ */
+int i2c_write_block(uint8_t sa, uint8_t mema, uint8_t nbytes, uint8_t * txdata)
 {
     int i;
     int success = 0;
@@ -97,11 +140,12 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
 
     retransmitCounter = 0;
 
-    bytesLength = bytesToWrite;
+    bytesLength = nbytes;
 
+    // Copy from the transmit array into the volatile buffer.
     for(i=0; i<bytesLength; i++)
     {
-        buffer[i] = *(txData + i);
+        buffer[i] = *(txdata + i);
     }
 
     //Disable the USCI module and clears the other bits of control register
@@ -112,7 +156,7 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
     HWREG16(EUSCI_BASE + OFS_UCBxCTLW1) |= EUSCI_B_I2C_NO_AUTO_STOP;
 
     //Specify slave address
-    EUSCI_B_I2C_setSlaveAddress(EUSCI_BASE, slaveAddr);
+    EUSCI_B_I2C_setSlaveAddress(EUSCI_BASE, sa);
 
     //Set in transmit mode
     EUSCI_B_I2C_setMode(EUSCI_BASE, EUSCI_B_I2C_TRANSMIT_MODE);
@@ -137,7 +181,7 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
 
     restartTx = true;
     stopFlag = false;
-    gbl_regOffset = regOffset;
+    gbl_regOffset = mema;
 
 
     success = EUSCI_B_I2C_masterSendMultiByteStartWithTimeout(EUSCI_BASE, gbl_regOffset, 1000);
@@ -174,7 +218,21 @@ int i2c_write_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToWrite, 
 
 }
 
-int i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, uint8_t * rxData, uint8_t rega)
+/*!
+ * @brief Read N bytes from the I2C device.
+ *
+ * When a register address is specified:   START | WRITE SA | MEMA | REGA | STOP  | START   | READ SA | BYTE0    | BYTE ... | BYTE n-1 | STOP.
+ * When no register address is specified:  START | WRITE SA | MEMA | STOP | START | READ SA | BYTE0   | BYTE ... | BYTE n-1 | STOP.
+ *
+ * @param[in] sa slave address.
+ * @param[in] mema memory address.
+ * @param[in] nbytes the number of bytes to read.
+ * @param[out] rxdata a pointer to an array used to store read data. Must be at least nbytes long.
+ * @param[in] rega register address. Set to 0xFF when a register read is not required.
+ *
+ * @returns -1 when the slave fails to respond, otherwise zero.
+ */
+int i2c_read_block(uint8_t sa, uint8_t mema, uint8_t nbytes, uint8_t * rxdata, uint8_t rega)
 {
     int i;
     int retransmitCounter = 0;
@@ -182,18 +240,22 @@ int i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, ui
     int success;
     uint8_t txData = 0;
 
+    // If a register address has been supplied, write this first.
     if (rega == 0xFF)
     {
+        // Not reading from a register, so WRITE SA | MEMA | STOP
         bytesToWrite = 0;
     }
     else
     {
+        // Reading from a register, so WRITE SA | MEMA | REGA | STOP
         bytesToWrite = 1;
         txData = rega;
     }
 
+    // Start the write transaction and wait for it to finish.
     while(1) {
-        success = i2c_write_block(slaveAddr, regOffset, bytesToWrite, &txData);
+        success = i2c_write_block(sa, mema, bytesToWrite, &txData);
         if (success != 0) {
             break;
         }
@@ -211,15 +273,15 @@ int i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, ui
     HWREG16(EUSCI_BASE + OFS_UCBxCTLW1) |= EUSCI_B_I2C_SEND_STOP_AUTOMATICALLY_ON_BYTECOUNT_THRESHOLD;
 
     //Byte Count Threshold
-    HWREG16(EUSCI_BASE + OFS_UCBxTBCNT) = bytesToRead;
+    HWREG16(EUSCI_BASE + OFS_UCBxTBCNT) = nbytes;
 
-    bytesLength = bytesToRead;
+    bytesLength = nbytes;
 
-   // Set to receive mode
-   EUSCI_B_I2C_setMode(EUSCI_BASE, EUSCI_B_I2C_RECEIVE_MODE);
+    // Set to receive mode
+    EUSCI_B_I2C_setMode(EUSCI_BASE, EUSCI_B_I2C_RECEIVE_MODE);
 
-   // Enable I2C Module to start operations
-   EUSCI_B_I2C_enable(EUSCI_BASE);
+    // Enable I2C Module to start operations
+    EUSCI_B_I2C_enable(EUSCI_BASE);
 
 
     EUSCI_B_I2C_clearInterrupt(EUSCI_BASE,
@@ -227,7 +289,7 @@ int i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, ui
                                EUSCI_B_I2C_NAK_INTERRUPT
     );
 
-    //Enable master Receive interrupt
+    //Enable the I2C Receive interrupts
     EUSCI_B_I2C_enableInterrupt(EUSCI_BASE,
                                 EUSCI_B_I2C_RECEIVE_INTERRUPT0 +
                                 EUSCI_B_I2C_NAK_INTERRUPT
@@ -235,11 +297,13 @@ int i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, ui
 
     __delay_cycles(100);
 
-    // I2C start condition
+    // Send an I2C start condition
     EUSCI_B_I2C_masterReceiveStart(EUSCI_BASE);
 
+    // Wait for the read transaction to complete
     __bis_SR_register(CPUOFF + GIE);    // Enter LPM0 w/ interrupt
 
+    // Retry the read if it has failed with a 'no acknowledge'.
     while(nackFlag == true && (retransmitCounter++ < 200))
     {
         nackFlag = false;
@@ -247,60 +311,91 @@ int i2c_read_block(uint8_t slaveAddr, uint8_t regOffset, uint8_t bytesToRead, ui
         __bis_SR_register(CPUOFF + GIE);    // Enter LPM0 w/ interrupt
     }
 
-    //Enable master Receive interrupt
+    // Disable the I2C Receive interrupts
     EUSCI_B_I2C_disableInterrupt(EUSCI_BASE,
                                  EUSCI_B_I2C_RECEIVE_INTERRUPT0 +
                                  EUSCI_B_I2C_NAK_INTERRUPT
     );
 
+    // Copy from the volatile buffer into the read data array.
     for(i=0; i<bytesLength; i++)
     {
-        *(rxData + i) = buffer[i];
+        *(rxdata + i) = buffer[i];
     }
 
     return success;
 
 }
 
-uint8_t i2c_read8(uint8_t slaveAddr, uint8_t regOffset)
+/*!
+ * @brief Read one byte from memory on the I2C slave.
+ *
+ * START | WRITE SA | MEMA | STOP | START | READ SA | BYTE0 | STOP.
+ *
+ * @param[in] sa slave address.
+ * @param[in] mema memory address.
+ *
+ * @returns one byte read from the I2C slave.
+ */
+uint8_t i2c_read8(uint8_t sa, uint8_t mema)
 {
-    uint8_t receiveData;
+    uint8_t rxdata;
 
-    i2c_read_block(slaveAddr, regOffset, 1, &receiveData, 0xFF);
+    i2c_read_block(sa, mema, 1, &rxdata, 0xFF);
 
-    return receiveData;
+    return rxdata;
 }
 
-uint16_t i2c_read16(uint8_t slaveAddr, uint8_t regOffset)
+/*!
+ * @brief Read two bytes from memory on the I2C slave.
+ *
+ * START | WRITE SA | MEMA | STOP | START | READ SA | BYTE0 | BYTE1 | STOP.
+ *
+ * @param[in] sa slave address.
+ * @param[in] mema memory address.
+ *
+ * @returns one little-endian 16-bit integer read from the I2C slave.
+ */
+uint16_t i2c_read16(uint8_t sa, uint8_t mema)
 {
-    uint8_t receiveData[2];
+    uint8_t rxdata[2];
     uint16_t rxDataLsb;
     uint16_t rxDataMsb;
 
 
-    i2c_read_block(slaveAddr, regOffset, 2, receiveData, 0xFF);
+    i2c_read_block(sa, mema, 2, rxdata, 0xFF);
 
-    rxDataLsb = receiveData[0];
-    rxDataMsb = receiveData[1];
+    rxDataLsb = rxdata[0];
+    rxDataMsb = rxdata[1];
 
     return ((rxDataMsb << 8)&0xFF00) | (rxDataLsb & 0x00FF);
 }
 
-uint16_t i2c_read32(uint8_t slaveAddr, uint8_t regOffset, uint16_t * temp, uint16_t * hum)
+/*!
+ * @brief Read two consecutive unsigned integers from the I2C slave.
+ *
+ * START | WRITE SA | MEMA | STOP | START | READ SA | BYTE0 | BYTE1 | BYTE2 | BYTE3 | STOP.
+ *
+ * @param[in] sa slave address.
+ * @param[in] mema memory address.
+ * @param[out] uint0 pointer to an address for storing the first little endian unsigned integer.
+ * @param[out] uint1 pointer to an address for strong the second little endian unsigned integer.
+ */
+uint16_t i2c_read16x2(uint8_t sa, uint8_t mema, uint16_t * uint0, uint16_t * uint1)
 {
-    uint8_t receiveData[4];
-    uint16_t tempLsb , humLsb;
-    uint16_t tempMsb, humMsb;
+    uint8_t rxdata[4];
+    uint16_t u0Lsb, u1Lsb;
+    uint16_t u0Msb, u1Msb;
 
-    i2c_read_block(slaveAddr, regOffset, 4, receiveData, 0xFF);
+    i2c_read_block(sa, mema, 4, rxdata, 0xFF);
 
-    tempLsb = receiveData[0];
-    tempMsb = receiveData[1];
-    humLsb = receiveData[2];
-    humMsb = receiveData[3];
+    u0Lsb = rxdata[0];
+    u0Msb = rxdata[1];
+    u1Lsb = rxdata[2];
+    u1Msb = rxdata[3];
 
-    *temp = ((tempMsb << 8)&0xFF00) | (tempLsb & 0x00FF);
-    *hum = ((humMsb << 8)&0xFF00) | (humLsb & 0x00FF);
+    *uint0 = ((u0Msb << 8)&0xFF00) | (u0Lsb & 0x00FF);
+    *uint1 = ((u1Msb << 8)&0xFF00) | (u1Lsb & 0x00FF);
 
     return 0;
 }
