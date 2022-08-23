@@ -51,7 +51,8 @@ extensions = [
     'breathe',
     'sphinx_rtd_theme',
     'sphinxcontrib.plantuml',
-    'sphinxcontrib.needs'
+    'sphinxcontrib.needs',
+    'sphinx_markdown_tables'
 ]
 
 breathe_projects = { "cupl Tag Firmware": "firmware/doxygen/xml/"} # BREATHE

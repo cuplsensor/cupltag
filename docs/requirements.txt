@@ -6,3 +6,4 @@ wheel==0.33.6
 sphinx_rtd_theme
 sphinxcontrib-plantuml
 sphinxcontrib-needs
+sphinx-markdown-tables
