@@ -127,12 +127,10 @@ int i2c_readreg(uint8_t sa, uint8_t mema, uint8_t rega)
  * When NBYTES == 0:
  *
  * | START | WRITE SA | MEMA | STOP |
- * |-------|----------|------|------|
  *
  * When NBYTES >= 1:
  *
  * | START | WRITE SA | MEMA | TXDATA[0] | TXDATA[...] | TXDATA[NBYTES-1] | STOP |
- * |-------|----------|------|-----------|-------------|------------------|------|
  *
  * @param[in] sa slave address.
  * @param[in] mema memory address.
@@ -231,12 +229,10 @@ int i2c_write_block(uint8_t sa, uint8_t mema, uint8_t nbytes, uint8_t * txdata)
  * When a register address is specified:
  *
  * | START | WRITE SA | MEMA | REGA | STOP  | START   | READ SA | BYTE0    | BYTE ... | BYTE n-1 | STOP |
- * |-------|----------|------|------|-------|---------|---------|----------|----------|----------|------|
  *
  * When no register address is specified:
  *
  * | START | WRITE SA | MEMA | STOP | START | READ SA | BYTE0   | BYTE ... | BYTE n-1 | STOP |
- * |-------|----------|------|------|-------|---------|---------|----------|----------|------|
  *
  * @param[in] sa slave address.
  * @param[in] mema memory address.
