@@ -26,6 +26,6 @@
 #define CONFIGNFC_H_
 
 int confignfc_check();
-int confignfc_readtext();
+int confignfc_parse();
 
 #endif /* CONFIGNFC_H_ */

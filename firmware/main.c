@@ -675,7 +675,7 @@ tretcode init_ntag(tevent evt)
     // Checks for an NFC text record.
     if (confignfc_check())
     {
-        confignfc_readtext(); // Configure from text records.
+        confignfc_parse(); // Configure from text records.
         rc = tr_newconfig;
     }
 

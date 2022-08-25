@@ -27,32 +27,64 @@
 #include "nvparams.h"
 #include "defs.h"
 
-static char readbuffer[BLKSIZE];
-extern unsigned char msgblock[64];
+static char readbuffer[BLKSIZE];                /*!< Holds one 16-byte EEPROM block. */
+extern unsigned char msgblock[64];              /*!< Re-use an array declared as part of cuplcodec for calculating the MD5 checksum. */
 
-#define PAYLOADSTART_SHORTREC_INDEX 6
-#define RECORDTYPE_SHORTREC_INDEX  5
-#define PAYLOADLEN_SHORTREC_INDEX  4
+#define EEPROM_USERMEM_FIRST_BLOCK      1       /*!< Index of the first 16-byte block of unprotected user memory. */
+#define NDEF_RECORDTYPE_TEXT            'T'     /*!< NDEF text record type. */
 
-typedef enum {startcharsearch, cmdfound, datafound, endcharsearch} searchstate_t;
+#define PAYLOADSTART_SHORTREC_INDEX     6       /*!< NDEF record payload starts at this index. */
+#define RECORDTYPE_SHORTREC_INDEX       5       /*!< Index corresponding to NDEF record type. Only correct for short NDEF records. */
+#define PAYLOADLEN_SHORTREC_INDEX       4       /*!< Index corresponding to NDEF record length. Only correct for short NDEF records. */
 
-int readfromtag = 0;
+typedef enum {
+    startcharsearch,        /*!< Search for the config string start character. */
+    cmdfound,               /*!< Read the command byte. */
+    datafound,              /*!< Check for the delimiter byte. */
+    endcharsearch           /*!< Copy the configuration string value into msgblock. */
+} parserstate_t;
 
+/*!
+ * @brief Read the first block of NFC EEPROM user memory. Check if it contains an NDEF text record.
+ *
+ * Configuration data are written as strings in the text record.
+ *
+ * @returns 1 if a short text record is present, otherwise 0.
+ */
 int confignfc_check()
 {
-    int cursorblock = 0;
-    char rectype = 0;
-
-    nt3h_readtag(cursorblock+1, readbuffer);
-    cursorblock++;
-
-    rectype = readbuffer[RECORDTYPE_SHORTREC_INDEX];
-
-    return (rectype == 'T');
+    // Read the first block of user memory into a buffer.
+    nt3h_readtag(EEPROM_USERMEM_FIRST_BLOCK, readbuffer);
+    // Check for a text record.
+    return (readbuffer[RECORDTYPE_SHORTREC_INDEX] == NDEF_RECORDTYPE_TEXT);
 }
 
-
-int confignfc_readtext()
+/*!
+ * @brief Parse the NDEF text record into configuration strings. Writing configuration to NVM.
+ *
+ * Configuration strings are formatted as:
+ *
+ * <c:xyz>
+ *
+ * Where:
+ *
+ * '<' is the start character.
+ *
+ * 'c' is the command.
+ *
+ * ':' is the delimiter.
+ *
+ * 'xyz' is the value.
+ *
+ * '>' is the end character.
+ *
+ * The text record can contain one or more strings. There is no separator
+ * character between them.
+ *
+ * Configuration strings are written to non-volatile memory with nvparams_write().
+ *
+ */
+int confignfc_parse()
 {
     int cursorblock = 0;
     int payloadlen;
@@ -62,7 +94,7 @@ int confignfc_readtext()
     int bufferindex = PAYLOADSTART_SHORTREC_INDEX;
     char payloadbyte;
     char cmd;
-    searchstate_t searchstate = startcharsearch;
+    parserstate_t searchstate = startcharsearch;
 
     nt3h_readtag(cursorblock+1, readbuffer);
     cursorblock++;
