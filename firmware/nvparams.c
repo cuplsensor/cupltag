@@ -22,22 +22,59 @@
  *  along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/**
+ * @file nvparams.c
+ *
+ * @brief Reads and writes parameters from non-volatile memory (FRAM).
+ *
+ * The cuplTag (and cuplcodec) is configured with a small set of parameters. These control
+ * the tag serial string, the sampling interval or the URL of the web application that decodes the tag contents.
+ *
+ * A parameter has a single-byte identifier e.g. 'w' and a value. The length of the value field
+ * depends on the parameter. For example, the serial string consists of eight bytes (e.g. 'AB43xkp4').
+ *
+ * A variable is used to monitor how many parameters have been written since the last power cycle.
+ * A full set of parameters is needed for the program to proceed.
+ *
+ */
+
 #include "nvparams.h"
 #include "nvtype.h"
 #include <string.h>
 #include <msp430.h>
 #include <stdlib.h>
 
-#define DEFAULT_SMPLINTMINS     6
-#define DEFAULT_SLEEPINTDAYS    0
-#define DEFAULT_RANDSTATE       0x4D4C
+#define NVPARAM_SERIAL_ID       'w'       /*!< Serial ID */
+#define NVPARAM_SECKEY_ID       's'       /*!< Secret key ID */
+#define NVPARAM_BASEURL_ID      'b'       /*!< Base URL of the cupl web application ID */
+#define NVPARAM_FMT_ID          'f'       /*!< Sample format ID */
+#define NVPARAM_SMPLINT_ID      't'       /*!< Sample interval ID */
+#define NVPARAM_MINVOLT_ID      'u'       /*!< Minimum operating voltage (in mV) ID */
+#define NVPARAM_HTTPSDIS_ID     'h'       /*!< Disable HTTPS ID */
+#define NVPARAM_USEHMAC_ID      'i'       /*!< Use HMAC ID */
+
+#define SERIAL_PARAM_WRITTEN    BIT0
+#define SECKEY_PARAM_WRITTEN    BIT1
+#define FMT_PARAM_WRITTEN       BIT2
+#define SMPLINT_PARAM_WRITTEN   BIT3
+#define MINVOLT_PARAM_WRITTEN   BIT4
+#define BASEURL_PARAM_WRITTEN   BIT5
+#define HTTPSDIS_PARAM_WRITTEN  BIT6
+#define USEHMAC_PARAM_WRITTEN   BIT7
+
+#define ALL_PARAMS_WRITTEN      0xFF      /*!< 0xFF in the 'paramswritten' RAM variable indicates that all parameters have been written. */
+#define NVM_ALL_PARAMS_WRITTEN  0x00      /*!< Zero in NVM indicates that all parameters have been written. Why zero? After programming, the initial value for this NVM section is 0xFF. */
+
 #define MINUTES_PER_DAY         1440
-#define INTEGERFIELD_LENBYTES   5           // Value up to 65535 (5 ASCII digits)
+#define INTEGERFIELD_LENBYTES   5           /*!< Value up to 65535 (5 ASCII digits) */
+
+#define DISABLE_FRAM_DATA_WRITEPROTECT  (SYSCFG0 = FRWPPW | PFWP)          /*!< Clear the Data FRAM Write Protect bit. */
+#define ENABLE_FRAM_DATA_WRITEPROTECT   (SYSCFG0 = FRWPPW | DFWP | PFWP)   /*!< Set the Data FRAM Write Protect bit. */
 
 #pragma DATA_SECTION(nv, ".info");
 nv_t nv;
 
-unsigned int writtenfields = 0;
+unsigned int paramswritten = 0;           /*!< Bits are set in this integer that correspond to parameters written since the last power cycle. */
 
 /*!
  *  @brief Get the 8-character alphanumeric serial string.
@@ -114,7 +151,7 @@ long nvparams_getsleepintmins()
  */
 bool nvparams_allwritten()
 {
-    return (nv.allwritten == 0);
+    return (nv.allwritten == NVM_ALL_PARAMS_WRITTEN);
 }
 
 /*!
@@ -143,11 +180,11 @@ int nvparams_getresetsalltime()
  */
 void nvparams_cresetsperloop()
 {
-    SYSCFG0 = FRWPPW | PFWP;                   // Program FRAM write enable
+    DISABLE_FRAM_DATA_WRITEPROTECT;
 
     nv.resetsperloop = 0;
 
-    SYSCFG0 = FRWPPW | DFWP | PFWP;           // Program FRAM write protected (not writable)
+    ENABLE_FRAM_DATA_WRITEPROTECT;
 }
 
 /*!
@@ -155,86 +192,115 @@ void nvparams_cresetsperloop()
  */
 void nvparams_incrcounters()
 {
-    SYSCFG0 = FRWPPW | PFWP;                   // Program FRAM write enable
+    DISABLE_FRAM_DATA_WRITEPROTECT;
 
     nv.resetsperloop += 1;
     nv.resetsalltime += 1;
 
-    SYSCFG0 = FRWPPW | DFWP | PFWP;             // Program FRAM write protected (not writable)
+    ENABLE_FRAM_DATA_WRITEPROTECT;
 }
 
 
-bool nvparams_write(char id, char * valptr, unsigned int payloadlen)
+/*!
+ *  @brief Write a parameter to non-volatile memory.
+ *
+ *  A parameter consists of an ID (one byte) and a value (one or more bytes).
+ *
+ *  @param[in] id parameter ID.
+ *  @param[in] valptr pointer to an array that contains the parameter value.
+ *  @param[in] vlen length of the value in bytes.
+ *
+ *  @return true if the parameter ID is recognised and its value has the correct length in bytes. Otherwise false.
+ */
+bool nvparams_write(char id, char * valptr, unsigned int vlen)
 {
-    bool validpacket = true;
-    char temp[INTEGERFIELD_LENBYTES + 1] = {0}; // Must be null terminated.
+    bool paramvalid = true;
+    // Parameter value as a string. +1 and initialised to 0 because the string must be null terminated.
+    char valstr[INTEGERFIELD_LENBYTES + 1] = {0};
     int smplintervalmins;
 
-    SYSCFG0 = FRWPPW | PFWP;                   // Program FRAM write enable
+    DISABLE_FRAM_DATA_WRITEPROTECT;
 
-    if ((id == 'w') && (payloadlen == sizeof(nv.serial)))
+    if ((id == NVPARAM_SERIAL_ID) && (vlen == SERIAL_LENBYTES))
     {
-        strncpy(nv.serial, valptr, payloadlen);
-        writtenfields |= BIT0;
+        // Copy the value string to the serial field in NVM.
+        strncpy(nv.serial, valptr, vlen);
+        paramswritten |= SERIAL_PARAM_WRITTEN;
     }
-    else if ((id == 's') && (payloadlen == sizeof(nv.seckey)))
+    else if ((id == NVPARAM_SECKEY_ID) && (vlen == SECKEY_LENBYTES))
     {
-        strncpy(nv.seckey, valptr, payloadlen);
-        writtenfields |= BIT1;
+        // Copy the value string to the secret key field in NVM.
+        strncpy(nv.seckey, valptr, vlen);
+        paramswritten |= SECKEY_PARAM_WRITTEN;
     }
-    else if ((id== 'b') && (payloadlen < BASEURL_LENBYTES))
+    else if ((id== NVPARAM_BASEURL_ID) && (vlen < BASEURL_LENBYTES))
     {
-        strncpy(nv.baseurl, valptr, payloadlen);
-        nv.baseurl[payloadlen] = 0;
-        writtenfields |= BIT5;
+        // Copy the value string to the base URL field in NVM.
+        strncpy(nv.baseurl, valptr, vlen);
+        // Null terminate the base URL. Bug: the base URL field should be 65 characters rather than 64.
+        nv.baseurl[vlen] = 0;
+        paramswritten |= BASEURL_PARAM_WRITTEN;
     }
-    else if ((id == 'f') && (payloadlen <= FORMAT_ASCII_MAXLEN))
+    else if ((id == NVPARAM_FMT_ID) && (vlen <= FMT_ASCII_MAXLEN))
     {
-        strncpy(temp, valptr, payloadlen); // Copy to temp to ensure null termination.
-        nv.format = atoi(temp);
-        writtenfields |= BIT2;
+        // Copy the value string to valstr to ensure it is null terminated.
+        strncpy(valstr, valptr, vlen);
+        // Convert the format string to an integer.
+        nv.format = atoi(valstr);
+        paramswritten |= FMT_PARAM_WRITTEN;
     }
-    else if ((id == 't') && (payloadlen <= SMPLINTERVAL_ASCII_MAXLEN))
+    else if ((id == NVPARAM_SMPLINT_ID) && (vlen <= SMPLINT_ASCII_MAXLEN))
     {
-        strncpy(temp, valptr, payloadlen); // Copy to temp to ensure null termination.
-        smplintervalmins = atoi(temp);
+        // Copy the value string to valstr to ensure it is null terminated.
+        strncpy(valstr, valptr, vlen);
+        // Convert the sample interval from ASCII into an integer.
+        smplintervalmins = atoi(valstr);
+        // Write the Least Significant Byte into NVM.
         nv.smplintervalmins[0] = smplintervalmins & 0xFF;
+        // Write the Most Signficant Byte into NVM
         nv.smplintervalmins[1] = smplintervalmins >> 8;
-        writtenfields |= BIT3;
+        paramswritten |= SMPLINT_PARAM_WRITTEN;
     }
-    else if ((id == 'u') && (payloadlen <= MINVOLTAGEMV_ASCII_MAXLEN))
+    else if ((id == NVPARAM_MINVOLT_ID) && (vlen <= MINVOLT_ASCII_MAXLEN))
     {
-        strncpy(temp, valptr, payloadlen); // Copy to temp to ensure null termination.
-        nv.minvoltagemv = atoi(temp);
-        writtenfields |= BIT4;
+        // Copy the value string to valstr to ensure it is null terminated.
+        strncpy(valstr, valptr, vlen);
+        // Convert the minimum voltage from ASCII to an integer.
+        nv.minvoltagemv = atoi(valstr);
+        paramswritten |= MINVOLT_PARAM_WRITTEN;
     }
-    else if ((id == 'h') && (payloadlen == 1))
+    else if ((id == NVPARAM_HTTPSDIS_ID) && (vlen == HTTPSDIS_LENBYTES))
     {
-        nv.httpsdisable = *valptr - 0x30;
-        writtenfields |= BIT6;
+        // Convert the HTTPS disable ASCII character to an integer.
+        nv.httpsdisable = *valptr - '0';
+        paramswritten |= HTTPSDIS_PARAM_WRITTEN;
     }
-    else if ((id == 'i') && (payloadlen == 1))
+    else if ((id == NVPARAM_USEHMAC_ID) && (vlen == USEHMAC_LENBYTES))
     {
-        nv.usehmac = *valptr - 0x30;
-
+        // Convert the Use HMAC ASCII character to an integer.
+        nv.usehmac = *valptr - '0';
+        // Check data for validity.
         if ((nv.usehmac == 0) || (nv.usehmac == 1))
         {
-            writtenfields |= BIT7;
+            paramswritten |= USEHMAC_PARAM_WRITTEN;
         }
     }
     else
     {
-        validpacket = false;
+        /* Parameter ID and value length are not recognised. */
+        paramvalid = false;
     }
 
-    if ((writtenfields ^ 0xFF) == 0)
+    // Check that all parameters have been written.
+    if ((paramswritten ^ ALL_PARAMS_WRITTEN) == 0)
     {
-        nv.allwritten = 0;
+        nv.allwritten = NVM_ALL_PARAMS_WRITTEN;
+        // Clear both reset counters.
         nv.resetsperloop = 0;
         nv.resetsalltime = 0;
     }
 
-    SYSCFG0 = FRWPPW | DFWP | PFWP;                    // Program FRAM write protected (not writable)
+    ENABLE_FRAM_DATA_WRITEPROTECT;
 
-    return validpacket;
+    return paramvalid;
 }

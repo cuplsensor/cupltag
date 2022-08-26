@@ -33,16 +33,20 @@ extern unsigned char msgblock[64];              /*!< Re-use an array declared as
 #define EEPROM_USERMEM_FIRST_BLOCK      1       /*!< Index of the first 16-byte block of unprotected user memory. */
 #define NDEF_RECORDTYPE_TEXT            'T'     /*!< NDEF text record type. */
 
-#define PAYLOADSTART_SHORTREC_INDEX     6       /*!< NDEF record payload starts at this index. */
+#define PAYLOADSTART_SHORTREC_INDEX     6       /*!< NDEF record payload starts at this byte within EEPROM block 1. */
 #define RECORDTYPE_SHORTREC_INDEX       5       /*!< Index corresponding to NDEF record type. Only correct for short NDEF records. */
 #define PAYLOADLEN_SHORTREC_INDEX       4       /*!< Index corresponding to NDEF record length. Only correct for short NDEF records. */
 
+#define CONFIGSTR_STARTCHAR             '<'     /*!< Marks the start of a configuration string. */
+#define CONFIGSTR_DELIMCHAR             ':'     /*!< Separates the ID from a value in a configuration string. */
+#define CONFIGSTR_ENDCHAR               '>'     /*!< Marks the end of a configuration string. */
+
 typedef enum {
-    startcharsearch,        /*!< Search for the config string start character. */
-    cmdfound,               /*!< Read the command byte. */
-    datafound,              /*!< Check for the delimiter byte. */
-    endcharsearch           /*!< Copy the configuration string value into msgblock. */
-} parserstate_t;
+    findstartchar,          /*!< Search for the config string start character. */
+    storeid,                 /*!< Read the ID byte. */
+    checkdelimiter,         /*!< Check for the delimiter byte. */
+    storevalue              /*!< Copy the configuration string value into msgblock. */
+} parserstate_t;            /*!< State of the configuration string parser. */
 
 /*!
  * @brief Read the first block of NFC EEPROM user memory. Check if it contains an NDEF text record.
@@ -70,7 +74,7 @@ int confignfc_check()
  *
  * '<' is the start character.
  *
- * 'c' is the command.
+ * 'c' is the ID.
  *
  * ':' is the delimiter.
  *
@@ -86,76 +90,86 @@ int confignfc_check()
  */
 int confignfc_parse()
 {
-    int cursorblock = 0;
-    int payloadlen;
-    int payloadindex = 0;
     volatile char rectype = 0;
-    int md5index = 0;
-    int bufferindex = PAYLOADSTART_SHORTREC_INDEX;
-    char payloadbyte;
-    char cmd;
-    parserstate_t searchstate = startcharsearch;
+    int cursorblock = EEPROM_USERMEM_FIRST_BLOCK;   /* Index of the EEPROM block to be read. */
+    int payloadlen;                                 /* Length of the NDEF record payload. */
+    int payloadindex = 0;                           /* Index within the NDEF record payload array. The first payload byte is index 0. */
+    int valindex = 0;                               /* Index within the configuration string value array. The first byte of the configuration string value is index 0. */
+    int bufferindex = PAYLOADSTART_SHORTREC_INDEX;  /* Index of the byte to be read within the current EEPROM block. */
+    char payloadbyte;                               /* Stores one byte of the NDEF record payload. */
+    char id;                                        /* Used to store the ID from a configuration string. */
+    parserstate_t parserstate = findstartchar;      /* State of the configuration string parser. */
 
-    nt3h_readtag(cursorblock+1, readbuffer);
+    // Read the first block of user memory into the buffer.
+    nt3h_readtag(cursorblock, readbuffer);
     cursorblock++;
 
+    // Read the NDEF record length.
+    // BUG: There is nothing to prevent payloadlen from exceeding the length of the msgblock array.
     payloadlen = readbuffer[PAYLOADLEN_SHORTREC_INDEX];
 
+    // Iterate through all bytes of the NDEF record payload.
     while(payloadindex++ < payloadlen)
     {
-        // Read from the buffer.
+        // Read from the buffer
         payloadbyte = readbuffer[bufferindex];
 
-        if (searchstate == startcharsearch)
+        if (parserstate == findstartchar)
         {
-            if (payloadbyte == '<')
+            /* Look for the start of a configuration string. */
+            if (payloadbyte == CONFIGSTR_STARTCHAR)
             {
-                searchstate = cmdfound;
+                /* A configuration string has been found. */
+                parserstate = storeid;
             }
         }
-        else if (searchstate == cmdfound)
+        else if (parserstate == storeid)
         {
-            cmd = payloadbyte;
-            searchstate = datafound;
+            /* Store the ID (one byte) from the configuration string. */
+            id = payloadbyte;
+            parserstate = checkdelimiter;
         }
-        else if (searchstate == datafound)
+        else if (parserstate == checkdelimiter)
         {
-            if (payloadbyte == ':')
+            /* Check for the delimiter character. */
+            if (payloadbyte == CONFIGSTR_DELIMCHAR)
             {
-                searchstate = endcharsearch;
+                /* The delimiter has been found. */
+                parserstate = storevalue;
             }
         }
         else
         {
-            if (payloadbyte == '>')
+            /* Store the value (several bytes) into the msgblock array. */
+            if (payloadbyte == CONFIGSTR_ENDCHAR)
             {
-                searchstate = startcharsearch;
-                nvparams_write(cmd, msgblock, md5index);
-
-                md5index = 0;
+                /* End character has been found. This marks the end of the value field of the configuration string. */
+                parserstate = findstartchar;
+                /* If the ID corresponds to a configuration parameter (e.g. the serial string), write it into NVM. */
+                nvparams_write(id, msgblock, valindex);
+                valindex = 0;
             }
             else
             {
-                msgblock[md5index++] = payloadbyte;
+                /* Append current payload byte to the array. */
+                msgblock[valindex++] = payloadbyte;
             }
         }
 
 
-
-        if (bufferindex >= 15)
+        if (bufferindex >= (BLKSIZE-1))
         {
-            nt3h_readtag(cursorblock+1, readbuffer);
+            /* Read the next block from EEPROM into the buffer. */
+            nt3h_readtag(cursorblock, readbuffer);
             cursorblock++;
             bufferindex = 0;
         }
         else
         {
+            /* Read the next byte from the current EEPROM block on the next loop. */
             bufferindex += 1;
         }
     }
-
-
-
 
     return 0;
 }

@@ -24,7 +24,6 @@
 
 /**
  * @file nt3h.c
- * @author Malcolm Mackay
  *
  * @brief A driver for the <a href="https://www.nxp.com/docs/en/data-sheet/NT3H2111_2211.pdf">NXP NT3H2111</a> NFC EEPROM.
  *
@@ -55,7 +54,7 @@
 #define CC1_VER                 0x10        /*!< Byte 1 of the Capability Container. Version. */
 #define CC2_NBYTESBY8           0x6D        /*!< Byte 2 of the Capability Container. The number of bytes in memory divided by 8. */
 
-unsigned char rxData[BLOCKSIZE] = {0}; /*!< Holds the content of one block. */
+unsigned char rxData[BLOCKSIZE] = {0};      /*!< Holds the content of one block. */
 volatile int nsreg2, nsreg3;
 
 
