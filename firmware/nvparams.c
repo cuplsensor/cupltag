@@ -25,7 +25,7 @@
 /**
  * @file nvparams.c
  *
- * @brief Reads and writes parameters from non-volatile memory (FRAM).
+ * @brief Reads and writes parameters in non-volatile memory (FRAM).
  *
  * The cuplTag (and cuplcodec) is configured with a small set of parameters. These control
  * the tag serial string, the sampling interval or the URL of the web application that decodes the tag contents.
