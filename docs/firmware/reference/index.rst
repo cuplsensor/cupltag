@@ -12,3 +12,4 @@ Reference
    confignfc
    comms_uart
    nvparams
+   batv

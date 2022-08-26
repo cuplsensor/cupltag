@@ -1,4 +1,4 @@
-Battery Voltage Measurement
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Battery Voltage 
+~~~~~~~~~~~~~~~~~
 
 .. doxygenfile:: batv.c
